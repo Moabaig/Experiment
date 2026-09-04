@@ -1,0 +1,18 @@
+{
+  "calibration_truth_sha256": "f250ea86243be1d33863adace1144424fe1491ecafa092f9fa0095db06fff09e",
+  "created_utc": "2026-08-29T00:21:08.548199+00:00",
+  "eligible_events": 98,
+  "evaluation_data_used": false,
+  "gamma": 30.85040006980439,
+  "method": "higher",
+  "negative_events": 1091,
+  "pilot_labels_used": false,
+  "positive_events": 9,
+  "predeclared_rule_sha256": "c05eacbb7c67bf5eb3cc0b594558acb8efb23fd786017b28c3ce7f1822d072ab",
+  "quantile": 0.99,
+  "realized_nominal_ample_event_far": 0.0,
+  "rule": "nominal/ample event-level d 99th percentile",
+  "schema": "oracle.gamma.freeze.v1",
+  "source_event_sha256": "416cda7d71c7ae4b90ba9ad016f2b2b0f93ed40a34391dfe056e928d57776a08",
+  "source_event_table": "/workspace/runs/gamma_pilot_001/oracle/oracle_events.parquet"
+}

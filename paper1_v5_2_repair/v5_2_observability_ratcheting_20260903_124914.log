@@ -1,0 +1,12 @@
+ Container real_experiment_bundle-dev-run-643c5c764742 Creating 
+ Container real_experiment_bundle-dev-run-643c5c764742 Created 
+Traceback (most recent call last):
+  File "/workspace/paper1_v5_2_repair/v5_2_observability_ratcheting_diagnostic.py", line 284, in <module>
+    "jump_norm": quantiles(block["jump_norm"]),
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/paper1_v5_2_repair/v5_2_observability_ratcheting_diagnostic.py", line 105, in quantiles
+    require(array.size > 0, "quantile input is empty")
+  File "/workspace/paper1_v5_2_repair/v5_2_observability_ratcheting_diagnostic.py", line 87, in require
+    raise RuntimeError(message)
+RuntimeError: quantile input is empty
+

@@ -1,0 +1,20 @@
+{
+    "schema":  "paper1.v5_2.install_record.v1",
+    "created_utc":  "2026-09-03T08:47:01.3979893Z",
+    "previous_trust_sha256":  "0A2627BDAACAD03E582BB039EEB2FB3AC73D33D20B77E96881EBCEEC64AAE437",
+    "previous_twin_sha256":  "39E6729AF233032AB9C58851C9682252F02D36EED739EB2EC769E165659DA34C",
+    "installed_trust_sha256":  "936DD373A2D8A2F0B905604CA4C3DE61EC2CC889BA233AA150A24F44F2926FE6",
+    "installed_twin_sha256":  "9CD9FFAA32DCFE2F12ED161A8D62D2D97B2AB0B4D462FDA0E97E7F46572043A4",
+    "installed_validation_report_sha256":  "8EBEDB33EA9ED9D2C8488B4D6D6245A9F36632776B569A5C683C81619817AC72",
+    "installed_validation_log_sha256":  "5A7DC56005194E5DA8D8CE45C1B4CC9F6F5C61E49DDD706C7A48CB69455E3F1C",
+    "environment_sha256_before":  "55A4FCB1ACB19D86CBE2DA4BCC4FE814170A14A5A637EC6CEC97D9C94195D694",
+    "environment_sha256_after":  "55A4FCB1ACB19D86CBE2DA4BCC4FE814170A14A5A637EC6CEC97D9C94195D694",
+    "installation_completed":  true,
+    "rollback_required":  false,
+    "authorization_scope":  "v5_2_mechanical_pair_only",
+    "simulation_authorized":  false,
+    "full_campaign_authorized":  false,
+    "calibration_authorized":  false,
+    "performance_outcome_columns_read":  false,
+    "performance_outcomes_inspected":  false
+}

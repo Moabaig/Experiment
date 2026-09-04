@@ -1,0 +1,98 @@
+{
+  "classification": "MODEL_INCREMENT_SCALE_IS_FULL_STATE_VECTOR_NORM",
+  "event_limit_equals_step_limit": true,
+  "event_limit_unique": [
+    22.15851980616034
+  ],
+  "event_policy_constant": true,
+  "event_scale_equals_step_scale": true,
+  "event_scale_unique": [
+    0.4431703961232068
+  ],
+  "events": 1100,
+  "expected_component_scale": 0.02,
+  "expected_jump_limit": 22.15851980616034,
+  "expected_vector_scale": 0.4431703961232068,
+  "hold_factor": 50.0,
+  "n": 491,
+  "omega": 0.02,
+  "performance_outcome_columns_read": false,
+  "performance_outcomes_inspected": false,
+  "run_id": "paper1_v5_1mv_s002_bw04_oracle",
+  "schema": "paper1.v5_1.guard.scale.diagnostic.v1",
+  "source_context": [
+    {
+      "line": 636,
+      "text": "        model_increment_scale = max("
+    },
+    {
+      "line": 640,
+      "text": "        jump_limit = float("
+    },
+    {
+      "line": 641,
+      "text": "            self.hold_factor * model_increment_scale"
+    },
+    {
+      "line": 684,
+      "text": "        elif jump_norm > jump_limit:"
+    },
+    {
+      "line": 695,
+      "text": "        self.last_jump_limit = jump_limit"
+    },
+    {
+      "line": 696,
+      "text": "        self.last_jump_guard_policy = \"fixed_model_increment\""
+    },
+    {
+      "line": 697,
+      "text": "        self.last_model_increment_scale = model_increment_scale"
+    },
+    {
+      "line": 934,
+      "text": "            \"jump_limit\": self.last_jump_limit,"
+    },
+    {
+      "line": 936,
+      "text": "            \"model_increment_scale\": self.last_model_increment_scale,"
+    },
+    {
+      "line": 1094,
+      "text": "            \"jump_limit_min\": float("
+    },
+    {
+      "line": 1096,
+      "text": "                    block[\"jump_limit\"], errors=\"coerce\""
+    },
+    {
+      "line": 1100,
+      "text": "            \"model_increment_scale\": float("
+    },
+    {
+      "line": 1101,
+      "text": "                first[\"model_increment_scale\"]"
+    },
+    {
+      "line": 1313,
+      "text": "        \"jump_limit\": row[\"jump_limit\"],"
+    },
+    {
+      "line": 1315,
+      "text": "        \"model_increment_scale\": row[\"model_increment_scale\"],"
+    }
+  ],
+  "step_limit_equals_formula": true,
+  "step_limit_equals_hold_times_scale": true,
+  "step_limit_unique": [
+    22.15851980616034
+  ],
+  "step_policy_constant": true,
+  "step_scale_equals_component": false,
+  "step_scale_equals_vector": true,
+  "step_scale_unique": [
+    0.4431703961232068
+  ],
+  "steps": 13200,
+  "twin_sha256": "39e6729af233032ab9c58851c9682252f02d36eed739eb2ec769e165659da34c"
+}

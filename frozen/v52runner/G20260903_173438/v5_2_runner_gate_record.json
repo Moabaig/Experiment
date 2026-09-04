@@ -1,0 +1,20 @@
+﻿{
+    "schema":  "paper1.v5_2.mechanical_runner_gate_record.v1",
+    "source_log_timestamp":  "20260903_172505",
+    "finalized_at":  "20260903_173438",
+    "builder_sha256":  "a3fb927879df924f9ec518f57bde4b1ee5cd5bf8c59d8e3d29fc9c0819312eeb",
+    "source_runner_sha256":  "31cc460690323100fdcc10df7162db0a92d615035dbc6e9319c09d1610b1dae9",
+    "candidate_runner_sha256":  "5753de4e708206d0a1f8669adc52fa74ba5e4395318a24ccfbfad6c1fceb6629",
+    "contract_sha256":  "11b20715bd970988a25429ba645373382671c8d5713cba5a836705f83b09256c",
+    "build_report_sha256":  "7f7ed1a089d3592f0b68733e46bc76d93f751a02a875705d8dc3dfd825c0faeb",
+    "preflight_log_sha256":  "9a37ef412c4caea1ac56092518ed8ae98c524c91f0d16f1882c6652b13e53b2c",
+    "campaign_root":  "frozen/paper1_factor_campaign_v5_2_mechanical",
+    "successful_marker":  "PAPER1_V5_2_MECHANICAL_PREFLIGHT_OK",
+    "validation_log_reused":  true,
+    "live_files_modified":  false,
+    "simulation_rerun":  false,
+    "full_campaign_authorized":  false,
+    "calibration_authorized":  false,
+    "performance_outcome_columns_read":  false,
+    "performance_outcomes_inspected":  false
+}

@@ -1,0 +1,185 @@
+ Image v9-helics-ns3:3.6.1-3.35 Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 713B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 3.89kB 0.1s done
+#2 DONE 0.1s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1.6
+#3 DONE 3.5s
+
+#4 docker-image://docker.io/docker/dockerfile:1.6@sha256:ac85f380a63b13dfcefa89046420e1781752bab202122f8f50032edf31be0021
+#4 resolve docker.io/docker/dockerfile:1.6@sha256:ac85f380a63b13dfcefa89046420e1781752bab202122f8f50032edf31be0021 0.0s done
+#4 CACHED
+
+#5 [internal] load metadata for docker.io/library/ubuntu:22.04
+#5 DONE 1.7s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 2B done
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 DONE 0.0s
+
+#8 [ 1/11] FROM docker.io/library/ubuntu:22.04@sha256:2edbbc5dc405e9612ba3584ce95480277e3eb374407b5505fe26f17df77c7dbc
+#8 resolve docker.io/library/ubuntu:22.04@sha256:2edbbc5dc405e9612ba3584ce95480277e3eb374407b5505fe26f17df77c7dbc 0.0s done
+#8 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 33B done
+#7 DONE 0.0s
+
+#9 [ 2/11] RUN apt-get update && apt-get install -y --no-install-recommends         build-essential ca-certificates cmake git ninja-build pkg-config wget         bzip2 xz-utils libatomic1 libboost-all-dev libbz2-dev libffi-dev         libgdbm-dev liblzma-dev libncursesw5-dev libnss3-dev libreadline-dev         libsqlite3-dev libssl-dev libzmq3-dev tk-dev uuid-dev zlib1g-dev     && rm -rf /var/lib/apt/lists/*
+#9 CACHED
+
+#10 [ 4/11] RUN git -c http.version=HTTP/1.1 clone --depth 1 --branch "v3.6.1"         https://github.com/GMLC-TDC/HELICS.git /tmp/HELICS     && test "$(git -C /tmp/HELICS rev-parse --short=7 HEAD)" = "47dd819"     && cmake -S /tmp/HELICS -B /tmp/HELICS/build -G Ninja         -DCMAKE_BUILD_TYPE=Release         -DCMAKE_INSTALL_PREFIX="/opt/helics"         -DBUILD_SHARED_LIBS=ON         -DHELICS_BUILD_TESTS=OFF         -DHELICS_BUILD_EXAMPLES=OFF     && cmake --build /tmp/HELICS/build --parallel 1     && cmake --install /tmp/HELICS/build     && rm -rf /tmp/HELICS     && ldconfig
+#10 CACHED
+
+#11 [ 7/11] RUN git -c http.version=HTTP/1.1 clone --depth 1 --branch "HELICS-v3.x-waf"         https://github.com/GMLC-TDC/helics-ns3.git         "/opt/ns-allinone-3.35/ns-3.35/contrib/helics"     && test "$(git -C "/opt/ns-allinone-3.35/ns-3.35/contrib/helics" rev-parse --short=7 HEAD)"         = "3e5879e"
+#11 CACHED
+
+#12 [ 3/11] RUN wget -q "https://www.python.org/ftp/python/3.11.11/Python-3.11.11.tgz"         -O /tmp/python.tgz     && tar -xzf /tmp/python.tgz -C /tmp     && cd "/tmp/Python-3.11.11"     && ./configure --prefix=/usr/local --enable-shared --with-ensurepip=install     && make -j"$(nproc)"     && make altinstall     && ln -sf /usr/local/bin/python3.11 /usr/local/bin/python3     && ln -sf /usr/local/bin/python3.11 /usr/local/bin/python     && ln -sf /usr/local/bin/pip3.11 /usr/local/bin/pip3     && ln -sf /usr/local/bin/pip3.11 /usr/local/bin/pip     && ldconfig     && rm -rf /tmp/python.tgz "/tmp/Python-3.11.11"
+#12 CACHED
+
+#13 [ 5/11] RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel     && python -m pip install --no-cache-dir         "helics[cli]==3.6.1"         "numpy==2.1.3"         "pandas==2.2.3"         "pyarrow==18.1.0"         "scipy==1.14.1"
+#13 CACHED
+
+#14 [ 6/11] RUN wget -q "https://www.nsnam.org/release/ns-allinone-3.35.tar.bz2"         -O /tmp/ns-allinone.tar.bz2     && echo "943a19c6b92b36d923671ae90a065f7ffb0dbabc  /tmp/ns-allinone.tar.bz2" | sha1sum -c -     && tar -xjf /tmp/ns-allinone.tar.bz2 -C /opt     && rm /tmp/ns-allinone.tar.bz2
+#14 CACHED
+
+#15 [10/11] RUN python --version     && helics_broker --version     && test -x "/opt/ns-allinone-3.35/ns-3.35/build/scratch/net_fed"     && ldd "/opt/ns-allinone-3.35/ns-3.35/build/scratch/net_fed"     && ! ldd "/opt/ns-allinone-3.35/ns-3.35/build/scratch/net_fed" | grep -q "not found"
+#15 CACHED
+
+#16 [ 8/11] COPY net_fed.cc /opt/ns-allinone-3.35/ns-3.35/scratch/net_fed.cc
+#16 CACHED
+
+#17 [ 9/11] RUN cd "/opt/ns-allinone-3.35/ns-3.35"     && ./waf configure         --build-profile=optimized         --disable-python         --with-helics="/opt/helics"         --disable-werror         --disable-examples         --disable-tests     && ./waf build -j1
+#17 CACHED
+
+#18 [11/11] WORKDIR /workspace
+#18 CACHED
+
+#19 exporting to image
+#19 exporting layers 0.0s done
+#19 exporting manifest sha256:19c1879a2de8560a9764a02a9fd24a8b4812354bbe31764c16ffe5093ee3d4dd done
+#19 exporting config sha256:86823bad1a408bfc809cc091e2d37f2d027856bd35da14281747c992c7f00f4e done
+#19 exporting attestation manifest sha256:6a3971fd1f0445aabeb9cca495cf10c5c1f7d048a7d81cb7c837bf7addafa99d 0.0s done
+#19 exporting manifest list sha256:26e53e6a739b55071b01b4ed0488d1e347ac57a13c024d4ba033aa7e930e7959 0.0s done
+#19 naming to docker.io/library/v9-helics-ns3:3.6.1-3.35
+#19 naming to docker.io/library/v9-helics-ns3:3.6.1-3.35 done
+#19 unpacking to docker.io/library/v9-helics-ns3:3.6.1-3.35 0.0s done
+#19 DONE 0.1s
+
+#20 resolving provenance for metadata file
+#20 DONE 0.0s
+ Image v9-helics-ns3:3.6.1-3.35 Built 
+ Container real_experiment_bundle-dev-run-1fbea70826a2 Creating 
+ Container real_experiment_bundle-dev-run-1fbea70826a2 Created 
+test_calibration_cli_writes_step_derived_v2_contract (test_regressions.CalibrationTests.test_calibration_cli_writes_step_derived_v2_contract) ... CALIBRATION_OK r0=11.5318342 u0_lmax=15.5126852 u0_trace=28.7839094 T_th=0.720893581 nominal_ample_far=0 beta1=0 beta2=0
+Wrote frozen calibration: /tmp/tmp80qugc_d/calibration.json
+ok
+test_combined_event_score_is_maximum_of_stepwise_sum (test_regressions.CalibrationTests.test_combined_event_score_is_maximum_of_stepwise_sum) ... ok
+test_event_level_calibration_input_is_rejected (test_regressions.CalibrationTests.test_event_level_calibration_input_is_rejected) ... ok
+test_legacy_calibration_is_rejected (test_regressions.CalibrationTests.test_legacy_calibration_is_rejected) ... ok
+test_oracle_uses_minimum_trust_and_maximum_score (test_regressions.EventAggregationTests.test_oracle_uses_minimum_trust_and_maximum_score) ... ok
+test_physical_telemetry_is_accepted (test_regressions.TruthContractTests.test_physical_telemetry_is_accepted) ... ok
+test_production_requires_physical_telemetry (test_regressions.TruthContractTests.test_production_requires_physical_telemetry) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.494s
+
+OK
+ Container real_experiment_bundle-dev-run-6bfbf94f70c3 Creating 
+ Container real_experiment_bundle-dev-run-6bfbf94f70c3 Created 
+test_cap_preserves_starvation_and_caps_feasible_links (test_factor_extension.BandwidthFactorTests.test_cap_preserves_starvation_and_caps_feasible_links) ... ok
+test_invalid_cap_is_rejected (test_factor_extension.BandwidthFactorTests.test_invalid_cap_is_rejected) ... ok
+test_oracle_cap_is_backward_compatible_for_frozen_patterns (test_factor_extension.BandwidthFactorTests.test_oracle_cap_is_backward_compatible_for_frozen_patterns) ... ok
+test_parser_records_factor_arguments (test_factor_extension.BandwidthFactorTests.test_parser_records_factor_arguments) ... ok
+test_mean_and_delta_are_computed_on_one_realization (test_factor_extension.DualExposureTests.test_mean_and_delta_are_computed_on_one_realization) ... ok
+test_factor_design_has_150_predeclared_cells (test_factor_extension.FactorDesignContractTests.test_factor_design_has_150_predeclared_cells) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.019s
+
+OK
+ Container real_experiment_bundle-dev-run-d75ec7ccd961 Creating 
+ Container real_experiment_bundle-dev-run-d75ec7ccd961 Created 
+FACTOR_V3_STATIC_VERIFY_OK
+DESIGN_SHA256= c88b5ba9680632eca2672f586628fddc2970de76d12c93108b87ae682840fd8f
+CAMPAIGN_CELLS=150
+SEEDS=30
+BANDWIDTH_LEVELS=5
+BANDWIDTH_DIAGNOSTICS= [{"cap_bps": 0.5, "id": "bw00_floor", "maximum_starved_channels": 45, "median_starved_channels": 45.0, "minimum_starved_channels": 45}, {"cap_bps": 10000.0, "id": "bw01_10kbps", "maximum_starved_channels": 24, "median_starved_channels": 4.0, "minimum_starved_channels": 0}, {"cap_bps": 100000.0, "id": "bw02_100kbps", "maximum_starved_channels": 24, "median_starved_channels": 4.0, "minimum_starved_channels": 0}, {"cap_bps": 1000000.0, "id": "bw03_1mbps", "maximum_starved_channels": 24, "median_starved_channels": 4.0, "minimum_starved_channels": 0}, {"cap_bps": 1000000000000.0, "id": "bw04_oracle", "maximum_starved_channels": 24, "median_starved_channels": 4.0, "minimum_starved_channels": 0}]
+ Container real_experiment_bundle-dev-run-5ea1883d9e89 Creating 
+ Container real_experiment_bundle-dev-run-5ea1883d9e89 Created 
+PAPER1_FACTOR_DESIGN_V4_VERIFY_OK
+V3_SHA256= c88b5ba9680632eca2672f586628fddc2970de76d12c93108b87ae682840fd8f
+V4_SHA256= f4c2b422b3fb113f1e33bd19aafd89f1591f18f1c5272d88a02d84a3d8d154f1
+RUNNER_SHA256= b4e1b2b14bcbe45a0f1e48f06a1f30d76804836bc8d9545d624bcb533fe0bd2f
+CONFIRMATORY_SEEDS=2-31
+CAMPAIGN_CELLS=150
+THRESHOLD_STATUS= FROZEN_AND_VALID
+THRESHOLD_SHA256= 2e968f235d3ece872e402dd15cbe9d618a34c2862dd885c65105fc96c640303f
+ Container real_experiment_bundle-dev-run-9bbf1bbb7c75 Creating 
+ Container real_experiment_bundle-dev-run-9bbf1bbb7c75 Created 
+  eps = 0.005688
+    lmax : limit 7.09949  -> OK   ceiling 0.4   achievable 0.4
+    trace: limit 238.506  -> OK   ceiling 58.08   achievable 0.237
+    [WARN] delta-confident floor collapses 488/491 directions at p=0.05:
+           u^delta is VACUOUS here. Use exposure_form='mean' as primary and report
+           the delta form only as a conservative check.
+twin_fed production preflight: m=583 n=491 telemetry=45 patterns=1100 steps=13200 stop=13200s b_min=1 bandwidth_level=bw00_floor bandwidth_cap_bps=0.5 stage_offset=2e-06s
+metric: scalarization=lmax exposure=mean delta_check=True spectrum_solver=row-scaled-SVD r0=16124.4 u0_lmax=4.64121e-06 u0_trace=1.42693e-05
+PRODUCTION_TWIN_VALIDATE_OK
+ Container real_experiment_bundle-dev-run-5a620fcb2dd0 Creating 
+ Container real_experiment_bundle-dev-run-5a620fcb2dd0 Created 
+  eps = 0.005688
+    lmax : limit 7.09949  -> OK   ceiling 0.4   achievable 0.4
+    trace: limit 238.506  -> OK   ceiling 58.08   achievable 0.237
+    [WARN] delta-confident floor collapses 488/491 directions at p=0.05:
+           u^delta is VACUOUS here. Use exposure_form='mean' as primary and report
+           the delta form only as a conservative check.
+twin_fed production preflight: m=583 n=491 telemetry=45 patterns=1100 steps=13200 stop=13200s b_min=1 bandwidth_level=bw01_10kbps bandwidth_cap_bps=10000 stage_offset=2e-06s
+metric: scalarization=lmax exposure=mean delta_check=True spectrum_solver=row-scaled-SVD r0=16124.4 u0_lmax=4.64121e-06 u0_trace=1.42693e-05
+PRODUCTION_TWIN_VALIDATE_OK
+ Container real_experiment_bundle-dev-run-e531313327cd Creating 
+ Container real_experiment_bundle-dev-run-e531313327cd Created 
+  eps = 0.005688
+    lmax : limit 7.09949  -> OK   ceiling 0.4   achievable 0.4
+    trace: limit 238.506  -> OK   ceiling 58.08   achievable 0.237
+    [WARN] delta-confident floor collapses 488/491 directions at p=0.05:
+           u^delta is VACUOUS here. Use exposure_form='mean' as primary and report
+           the delta form only as a conservative check.
+twin_fed production preflight: m=583 n=491 telemetry=45 patterns=1100 steps=13200 stop=13200s b_min=1 bandwidth_level=bw02_100kbps bandwidth_cap_bps=100000 stage_offset=2e-06s
+metric: scalarization=lmax exposure=mean delta_check=True spectrum_solver=row-scaled-SVD r0=16124.4 u0_lmax=4.64121e-06 u0_trace=1.42693e-05
+PRODUCTION_TWIN_VALIDATE_OK
+ Container real_experiment_bundle-dev-run-9532eb3e092f Creating 
+ Container real_experiment_bundle-dev-run-9532eb3e092f Created 
+  eps = 0.005688
+    lmax : limit 7.09949  -> OK   ceiling 0.4   achievable 0.4
+    trace: limit 238.506  -> OK   ceiling 58.08   achievable 0.237
+    [WARN] delta-confident floor collapses 488/491 directions at p=0.05:
+           u^delta is VACUOUS here. Use exposure_form='mean' as primary and report
+           the delta form only as a conservative check.
+twin_fed production preflight: m=583 n=491 telemetry=45 patterns=1100 steps=13200 stop=13200s b_min=1 bandwidth_level=bw03_1mbps bandwidth_cap_bps=1e+06 stage_offset=2e-06s
+metric: scalarization=lmax exposure=mean delta_check=True spectrum_solver=row-scaled-SVD r0=16124.4 u0_lmax=4.64121e-06 u0_trace=1.42693e-05
+PRODUCTION_TWIN_VALIDATE_OK
+ Container real_experiment_bundle-dev-run-8f028e7d8aee Creating 
+ Container real_experiment_bundle-dev-run-8f028e7d8aee Created 
+  eps = 0.005688
+    lmax : limit 7.09949  -> OK   ceiling 0.4   achievable 0.4
+    trace: limit 238.506  -> OK   ceiling 58.08   achievable 0.237
+    [WARN] delta-confident floor collapses 488/491 directions at p=0.05:
+           u^delta is VACUOUS here. Use exposure_form='mean' as primary and report
+           the delta form only as a conservative check.
+twin_fed production preflight: m=583 n=491 telemetry=45 patterns=1100 steps=13200 stop=13200s b_min=1 bandwidth_level=bw04_oracle bandwidth_cap_bps=1e+12 stage_offset=2e-06s
+metric: scalarization=lmax exposure=mean delta_check=True spectrum_solver=row-scaled-SVD r0=16124.4 u0_lmax=4.64121e-06 u0_trace=1.42693e-05
+PRODUCTION_TWIN_VALIDATE_OK
+PAPER1_V5_1_MECHANICAL_PREFLIGHT_OK
+DESIGN_SHA256=f4c2b422b3fb113f1e33bd19aafd89f1591f18f1c5272d88a02d84a3d8d154f1
+SEEDS=30
+BANDWIDTH_LEVELS=5
+CAMPAIGN_CELLS=150

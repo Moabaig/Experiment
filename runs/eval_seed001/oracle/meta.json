@@ -1,0 +1,64 @@
+{
+  "completed_utc": "2026-08-29T01:20:05Z",
+  "created_utc": "2026-08-29T01:00:34Z",
+  "git_sha": null,
+  "host": "7e3d754c2432",
+  "inputs": {
+    "feeder": {
+      "path": "/workspace/feeder.npz",
+      "sha256": "9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d"
+    },
+    "truth": {
+      "path": "/workspace/truth.eval.seed001.npz",
+      "sha256": "a3e053fa61590dae4b6df82cca62397fcb0e0e34d7997eb76ceb7f0863a527ac"
+    }
+  },
+  "label_definition": {
+    "formula": "sqrt((x_true-x_hat)^T W (x_true-x_hat)) > gamma",
+    "gamma": 30.85040006980439,
+    "uses_detector_or_baseline": false,
+    "weight_source": "truth.npz:W"
+  },
+  "packages": {
+    "helics": "3.6.1",
+    "numpy": "2.1.3",
+    "pandas": "2.2.3",
+    "pyarrow": "18.1.0"
+  },
+  "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "python": "3.11.11 (main, Aug 27 2026, 18:22:12) [GCC 11.4.0]",
+  "resolved_arguments": {
+    "broker": "tcp://broker:23404",
+    "core_init": "--federates=1 --broker_address=tcp://broker:23404",
+    "core_type": "zmq",
+    "dt": 1.0,
+    "federate_name": "oracle_fed",
+    "feeder": "/workspace/feeder.npz",
+    "gamma": 30.85040006980439,
+    "helics_time_delta": 1e-06,
+    "input_endpoint": "oracle_fed/in",
+    "out_dir": "/workspace/runs/eval_seed001/oracle",
+    "score_lag_steps": 0,
+    "steps_per_event": 12,
+    "stop_time": 0.0,
+    "strict_protocol": true,
+    "truth": "/workspace/truth.eval.seed001.npz",
+    "upstream_federate": "twin_fed",
+    "validate_only": false,
+    "weight": null
+  },
+  "runtime_counts": {
+    "duplicates": 0,
+    "events": 1100,
+    "malformed": 0,
+    "scores": 13200
+  },
+  "schema": "oracle.run.meta.v1",
+  "status": "complete",
+  "timing": {
+    "helics_time_delta": 1e-06,
+    "logical_dt": 1.0,
+    "stage_offset": 3e-06
+  },
+  "wall_seconds": 1170.137053489685
+}

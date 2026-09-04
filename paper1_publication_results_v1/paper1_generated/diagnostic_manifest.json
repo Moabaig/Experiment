@@ -1,0 +1,17 @@
+{
+  "facts": {
+    "arm_c_events": 300,
+    "condition_number": 4402128440.24652,
+    "lambda_min_perfect": 5.68768952508182,
+    "spearman_availability_vs_u": -0.741369437502323
+  },
+  "inputs": {
+    "age_loss_sweeps.csv": "495253b36c0a44053b50620bcb4f635af41aa99bd34490cf5addaf795e3d1598",
+    "arm_c_identity_effects.csv": "fe0c8266d4103b091034387086729948662384a6be64f5b3732de4ca354cda56",
+    "measurement_identity_influence.csv": "f81658f6094c7132ae59ed6c3105cb33316bbe807a02e787074a71afcec72378",
+    "static_geometry_events.csv": "08903c41d0801b4d597c46748f988e114bad71a9960149a20d22f581a8caaae0",
+    "static_geometry_summary.json": "93c0fa5f322c6376bbbf1932a6a60232b392b5ac8b65b35abd83f32fa718d5d1"
+  },
+  "schema": "paper1.publication.diagnostics.v1",
+  "status": "diagnostic_not_confirmatory_performance"
+}

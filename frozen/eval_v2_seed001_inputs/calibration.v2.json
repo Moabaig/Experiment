@@ -1,0 +1,47 @@
+{
+  "created_utc": "2026-08-30T17:58:42Z",
+  "hybrid_calibration": {
+    "auc_sB1": 0.5874199349376654,
+    "auc_sB2": 0.5721040189125296,
+    "beta1": 0.01973554287445086,
+    "beta2": 8.561699233270798e-07,
+    "objective": "maximize calibration event AUC from exact step maxima"
+  },
+  "normalizers": {
+    "r0": 16124.353830165805,
+    "u0_lmax": 4.641211459353103e-06,
+    "u0_trace": 1.4269342674497839e-05
+  },
+  "schema": "twin.calibration.v2",
+  "selection": {
+    "all_events": 1100,
+    "all_steps": 13200,
+    "ample_regime": "ample",
+    "moderate_events": 117,
+    "moderate_regime": "moderate",
+    "negative_events": 1053,
+    "nominal_ample_events": 117,
+    "positive_events": 47
+  },
+  "sources": [
+    {
+      "path": "/workspace/runs/calibration_v2_final_001/oracle/oracle_scores.parquet",
+      "sha256": "546376204bc95998f3715a1af2c19eaadb4caa1be9960ba642def383b45d843b"
+    }
+  ],
+  "targets": {
+    "moderate_target_trust": 0.7,
+    "nominal_trust": 0.9,
+    "normalizer_quantile": 0.5
+  },
+  "threshold": {
+    "T_th": 1.0322936125408775e-30,
+    "calibration_population": "nominal_ample_events",
+    "event_score_construction": "max_step(r/r0 + u/u0)",
+    "realized_calibration_far": 0.008547008547008548,
+    "realized_nominal_ample_far": 0.008547008547008548,
+    "scalarization": "lmax",
+    "score_threshold": 69.04576965495076,
+    "target_far": 0.01
+  }
+}

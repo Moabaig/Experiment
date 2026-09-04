@@ -1,0 +1,47 @@
+ Container real_experiment_bundle-dev-run-57df603c21b6 Creating 
+ Container real_experiment_bundle-dev-run-57df603c21b6 Created 
+PAPER1_V5_1_GUARD_SCALE_DIAGNOSTIC
+RUN_ID= paper1_v5_1mv_s002_bw04_oracle
+STEPS= 13200
+EVENTS= 1100
+OMEGA= 0.02
+EXPECTED_COMPONENT_SCALE= 0.02
+EXPECTED_VECTOR_SCALE= 0.4431703961232068
+EXPECTED_JUMP_LIMIT= 22.15851980616034
+STEP_SCALE_UNIQUE= [0.4431703961232068]
+STEP_LIMIT_UNIQUE= [22.15851980616034]
+EVENT_SCALE_UNIQUE= [0.4431703961232068]
+EVENT_LIMIT_UNIQUE= [22.15851980616034]
+STEP_SCALE_EQUALS_COMPONENT= False
+STEP_SCALE_EQUALS_VECTOR= True
+STEP_LIMIT_EQUALS_HOLD_TIMES_SCALE= True
+STEP_LIMIT_EQUALS_FORMULA= True
+EVENT_SCALE_EQUALS_STEP_SCALE= True
+EVENT_LIMIT_EQUALS_STEP_LIMIT= True
+STEP_POLICY_CONSTANT= True
+EVENT_POLICY_CONSTANT= True
+CLASSIFICATION= MODEL_INCREMENT_SCALE_IS_FULL_STATE_VECTOR_NORM
+TWIN_SHA256= 39e6729af233032ab9c58851c9682252f02d36eed739eb2ec769e165659da34c
+SOURCE_CONTEXT_BEGIN
+00636:         model_increment_scale = max(
+00640:         jump_limit = float(
+00641:             self.hold_factor * model_increment_scale
+00684:         elif jump_norm > jump_limit:
+00695:         self.last_jump_limit = jump_limit
+00696:         self.last_jump_guard_policy = "fixed_model_increment"
+00697:         self.last_model_increment_scale = model_increment_scale
+00934:             "jump_limit": self.last_jump_limit,
+00936:             "model_increment_scale": self.last_model_increment_scale,
+01094:             "jump_limit_min": float(
+01096:                     block["jump_limit"], errors="coerce"
+01100:             "model_increment_scale": float(
+01101:                 first["model_increment_scale"]
+01313:         "jump_limit": row["jump_limit"],
+01315:         "model_increment_scale": row["model_increment_scale"],
+SOURCE_CONTEXT_END
+REPORT_SHA256= 93cc1d13934e47cd3c265f1e8c25f8da9f5e1dbfaf29412f5da15efe89529e83
+SIMULATION_RERUN=False
+IMPLEMENTATION_MODIFIED=False
+PERFORMANCE_OUTCOME_COLUMNS_READ=False
+PERFORMANCE_OUTCOMES_INSPECTED=False
+PAPER1_V5_1_GUARD_SCALE_DIAGNOSTIC_COMPLETE

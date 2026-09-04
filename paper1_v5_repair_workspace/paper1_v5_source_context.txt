@@ -1,0 +1,94 @@
+
+===== SOURCE LINES 539-569 =====
+00539:         self.B = B
+00540:         self.scenarios = scenarios
+00541:         self.metric = metric
+00542:         self.exposure = exposure
+00543:         self.b_min = b_min
+00544:         self.beta1 = beta1
+00545:         self.beta2 = beta2
+00546:         self.bandwidth_cap_bps = bandwidth_cap_bps
+00547:         self.bandwidth_level = bandwidth_level
+00548:         self.hold_factor = hold_factor
+00549:         self.lnr_enabled = lnr_enabled
+00550:         self.m, self.n = H.shape
+00551:         self.x_previous = np.asarray(initial_state, dtype=float).copy()
+00552:         self.samples: list[TelemetrySample | None] = [None] * n_telemetry
+00553:         self.received_messages = 0
+00554:         self.accepted_messages = 0
+00555:         self.stale_messages = 0
+00556:         self.malformed_messages = 0
+00557:         self.new_since_update = 0
+00558: 
+00559:     def accept_sample(self, sample: TelemetrySample) -> bool:
+00560:         self.received_messages += 1
+00561:         previous = self.samples[sample.channel_id]
+00562:         if previous is not None:
+00563:             old_key = (previous.source_time, previous.sequence)
+00564:             new_key = (sample.source_time, sample.sequence)
+00565:             if new_key <= old_key:
+00566:                 self.stale_messages += 1
+00567:                 return False
+00568:         self.samples[sample.channel_id] = sample
+00569:         self.accepted_messages += 1
+
+===== SOURCE LINES 594-652 =====
+00594:         for channel, sample in enumerate(self.samples):
+00595:             if sample is None:
+00596:                 age[channel] = logical_time
+00597:                 continue
+00598:             z[channel] = sample.value
+00599:             age[channel] = max(logical_time - sample.source_time, 0.0)
+00600:             rx[channel] = bool(feasible[channel])
+00601: 
+00602:         # Local pseudo-measurements are generated from the prior twin state.
+00603:         # They are fresh, never traverse the network, and use their feeder
+00604:         # variances in the common estimator.
+00605:         if self.n_telemetry < self.m:
+00606:             z[self.n_telemetry :] = self.H[self.n_telemetry :] @ self.x_previous
+00607:             age[self.n_telemetry :] = 0.0
+00608:             rx[self.n_telemetry :] = True
+00609:             p[self.n_telemetry :] = 0.0
+00610:             bandwidth_effective[self.n_telemetry :] = max(self.b_min + 1.0, 1.0e12)
+00611: 
+00612:         return z, age, rx, p, bandwidth_effective
+00613: 
+00614:     def _estimate(
+00615:         self,
+00616:         z: np.ndarray,
+00617:         rx: np.ndarray,
+00618:         gamma: np.ndarray,
+00619:     ) -> tuple[np.ndarray, bool, bool]:
+00620:         candidate, solved_exactly = self.metric.estimate(z, rx, gamma)
+00621:         scale = max(
+00622:             float(np.linalg.norm(self.x_previous)),
+00623:             math.sqrt(self.n) * 0.01,
+00624:             1e-12,
+00625:         )
+00626:         held = (
+00627:             not solved_exactly
+00628:             or not np.all(np.isfinite(candidate))
+00629:             or float(np.linalg.norm(candidate)) > self.hold_factor * scale
+00630:         )
+00631:         if held:
+00632:             return self.x_previous.copy(), True, solved_exactly
+00633:         self.x_previous = np.asarray(candidate, dtype=float).copy()
+00634:         return self.x_previous.copy(), False, solved_exactly
+00635: 
+00636:     def _residual_statistics(
+00637:         self,
+00638:         z: np.ndarray,
+00639:         rx: np.ndarray,
+00640:         gamma: np.ndarray,
+00641:         x_hat: np.ndarray,
+00642:     ) -> dict[str, float]:
+00643:         idx = np.flatnonzero(rx & (gamma > 0.0))
+00644:         if idx.size == 0:
+00645:             return {"r": 0.0, "chi2": 0.0, "huber": 0.0, "lnr": float("nan")}
+00646: 
+00647:         residual = z[idx] - self.H[idx] @ x_hat
+00648:         standardized = residual / np.sqrt(
+00649:             self.sigma2[idx] / np.maximum(gamma[idx], 1e-300)
+00650:         )
+00651:         chi2 = float(np.sum(standardized**2) / self.m)
+00652:         absolute = np.abs(standardized)

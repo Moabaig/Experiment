@@ -1,0 +1,31 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20260901124707
+Username: DESKTOP-77QLROF\Administrator
+RunAs User: DESKTOP-77QLROF\Administrator
+Configuration Name: 
+Machine: DESKTOP-77QLROF (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\run_remaining_paper1_results.ps1
+Process ID: 11460
+PSVersion: 5.1.26100.9168
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.9168
+BuildVersion: 10.0.26100.9168
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+PAPER1_REMAINING_RESULTS_STARTED
+BUNDLE_ROOT=C:\Users\Administrator\Downloads\DT Paper 1\DT_Paper_Files\preflight\real_experiment_bundle\real_experiment_bundle
+LOG=C:\Users\Administrator\Downloads\DT Paper 1\DT_Paper_Files\preflight\real_experiment_bundle\real_experiment_bundle\paper1_remaining_results_20260901_124707.log
+PAPER1_REQUIRED_INPUTS_OK
+FROZEN_FILE_INSTALLED=.\factor_design.paper1.v4.json
+FROZEN_FILE_INSTALLED=.\verify_paper1_factor_design_v4.py
+FROZEN_FILE_INSTALLED=.\run_paper1_factor_campaign_v4.ps1
+PAPER1_V4_DESIGN_HASH_OK=f4c2b422b3fb113f1e33bd19aafd89f1591f18f1c5272d88a02d84a3d8d154f1
+
+**********************
+Windows PowerShell transcript end
+End time: 20260901124720
+**********************

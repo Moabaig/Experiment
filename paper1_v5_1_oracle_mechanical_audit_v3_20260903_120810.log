@@ -1,0 +1,11 @@
+ Container real_experiment_bundle-dev-run-ad5e08ebb527 Creating 
+ Container real_experiment_bundle-dev-run-ad5e08ebb527 Created 
+PAPER1_V5_1_ORACLE_MECHANICAL_AUDIT
+RUN_ID= paper1_v5_1mv_s002_bw04_oracle
+PERFORMANCE_OUTCOME_COLUMNS_READ=False
+Traceback (most recent call last):
+  File "/workspace/audit_paper1_v5_1_oracle_mechanical_v3.py", line 310, in <module>
+    "bootstrap_step_index": int(step_index[bootstrap_index]),
+                                ^^^^^^^^^^
+NameError: name 'step_index' is not defined
+

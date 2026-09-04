@@ -1,0 +1,103 @@
+00609:             p[self.n_telemetry :] = 0.0
+00610:             bandwidth_effective[self.n_telemetry :] = max(self.b_min + 1.0, 1.0e12)
+00611: 
+00612:         return z, age, rx, p, bandwidth_effective
+00613: 
+00614:     def _estimate(
+00615:         self,
+00616:         z: np.ndarray,
+00617:         rx: np.ndarray,
+00618:         gamma: np.ndarray,
+00619:     ) -> tuple[np.ndarray, bool, bool]:
+00620:         candidate, solved_exactly = self.metric.estimate(z, rx, gamma)
+00621:         candidate_array = np.asarray(candidate, dtype=float)
+00622:         candidate_finite = bool(np.all(np.isfinite(candidate_array)))
+00623: 
+00624:         had_valid_estimate = bool(
+00625:             getattr(self, "has_valid_estimate", False)
+00626:         )
+00627: 
+00628:         previous_norm = float(np.linalg.norm(self.x_previous))
+00629:         state_scale = max(
+00630:             previous_norm,
+00631:             math.sqrt(self.n) * 0.01,
+00632:             1e-12,
+00633:         )
+00634:         jump_limit = float(self.hold_factor * state_scale)
+00635: 
+00636:         if candidate_finite:
+00637:             candidate_norm = float(np.linalg.norm(candidate_array))
+00638:         else:
+00639:             candidate_norm = float("nan")
+00640: 
+00641:         if had_valid_estimate and candidate_finite:
+00642:             jump_norm = float(
+00643:                 np.linalg.norm(candidate_array - self.x_previous)
+00644:             )
+00645:         else:
+00646:             jump_norm = float("nan")
+00647: 
+00648:         rx_array = np.asarray(rx, dtype=bool).reshape(-1)
+00649:         configured_telemetry = int(
+00650:             getattr(self, "n_telemetry", 0)
+00651:         )
+00652:         external_total = min(configured_telemetry, len(rx_array))
+00653:         external_received = int(
+00654:             np.count_nonzero(rx_array[:external_total])
+00655:         )
+00656:         pseudo_received = int(
+00657:             np.count_nonzero(rx_array[external_total:])
+00658:         )
+00659: 
+00660:         if external_received > 0:
+00661:             external_support_state = "external_present"
+00662:         elif pseudo_received > 0:
+00663:             external_support_state = "pseudo_only"
+00664:         else:
+00665:             external_support_state = "no_received_measurements"
+00666: 
+00667:         if not solved_exactly:
+00668:             decision_reason = "solve_inexact"
+00669:             held = True
+00670:         elif not candidate_finite:
+00671:             decision_reason = "nonfinite_candidate"
+00672:             held = True
+00673:         elif not had_valid_estimate:
+00674:             decision_reason = "bootstrap_accept"
+00675:             held = False
+00676:         elif jump_norm > jump_limit:
+00677:             decision_reason = "jump_guard"
+00678:             held = True
+00679:         else:
+00680:             decision_reason = "accepted"
+00681:             held = False
+00682: 
+00683:         self.last_hold_reason = decision_reason
+00684:         self.last_candidate_norm = candidate_norm
+00685:         self.last_previous_norm = previous_norm
+00686:         self.last_jump_norm = jump_norm
+00687:         self.last_jump_limit = jump_limit
+00688:         self.last_candidate_finite = candidate_finite
+00689:         self.last_solved_exactly = bool(solved_exactly)
+00690:         self.last_external_received_count = external_received
+00691:         self.last_external_total = external_total
+00692:         self.last_pseudo_received_count = pseudo_received
+00693:         self.last_external_support_state = external_support_state
+00694:         self.last_pseudo_only = external_support_state == "pseudo_only"
+00695:         self.last_external_support_fraction = (
+00696:             float(external_received / external_total)
+00697:             if external_total > 0
+00698:             else 0.0
+00699:         )
+00700: 
+00701:         if held:
+00702:             return self.x_previous.copy(), True, solved_exactly
+00703: 
+00704:         self.x_previous = candidate_array.copy()
+00705:         self.has_valid_estimate = True
+00706:         return self.x_previous.copy(), False, solved_exactly
+00707: 
+00708:     def _residual_statistics(
+00709:         self,
+00710:         z: np.ndarray,
+00711:         rx: np.ndarray,

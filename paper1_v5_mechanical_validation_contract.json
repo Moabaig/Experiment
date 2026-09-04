@@ -1,0 +1,48 @@
+﻿{
+    "schema":  "paper1.v5.mechanical.validation.contract.v1",
+    "created_utc":  "2026-09-02T05:36:47.4044236Z",
+    "purpose":  "estimator_and_output_schema_mechanical_validation",
+    "authorization_state":  "mechanical_validation_only",
+    "estimator":  {
+                      "implementation":  "paper1.v5",
+                      "live_file":  "twin_fed.py",
+                      "sha256":  "009BDCC85FEC147D0885BEC97F0C762DE924626A5F3B8148516CCB56A8D822CF"
+                  },
+    "runner":  {
+                   "file":  "run_paper1_factor_campaign_v5_mechanical.ps1",
+                   "sha256":  "A2A9D19FFC94018140333F5B8FA8477CA2EC6A2AD767774CAED321689B63D2E8",
+                   "predecessor_file":  "run_paper1_factor_campaign_v4.ps1",
+                   "predecessor_sha256":  "B4E1B2B14BCBE45A0F1E48F06A1F30D76804836BC8D9545D624BCB533FE0BD2F"
+               },
+    "physical_fixture":  {
+                             "design_file":  "factor_design.paper1.v4.json",
+                             "design_sha256":  "F4C2B422B3FB113F1E33BD19AAFD89F1591F18F1C5272D88A02D84A3D8D154F1",
+                             "truth_seed":  2,
+                             "reused_for_mechanical_conditions_only":  true
+                         },
+    "execution":  {
+                      "seed_from":  2,
+                      "seed_to":  2,
+                      "bandwidth_from":  0,
+                      "bandwidth_to":  4,
+                      "expected_cells":  5,
+                      "run_prefix":  "paper1_v5mv_s002_",
+                      "output_root":  "runs",
+                      "campaign_lock_root":  "frozen/paper1_factor_campaign_v5_mechanical"
+                  },
+    "legacy_threshold_fixture":  {
+                                     "sha256":  "2E968F235D3ECE872E402DD15CBE9D618A34C2862DD885C65105FC96C640303F",
+                                     "inferentially_valid_for_v5":  false,
+                                     "permitted_use":  "runner_plumbing_and_schema_validation_only"
+                                 },
+    "prohibitions":  [
+                         "performance_outcome_inspection",
+                         "threshold_tuning",
+                         "inferential_comparison",
+                         "reuse_as_confirmatory_results",
+                         "full_thirty_seed_execution",
+                         "resume_run_remaining_paper1_results_ps1"
+                     ],
+    "performance_outcomes_inspected":  false,
+    "full_campaign_authorized":  false
+}

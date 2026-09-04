@@ -1,0 +1,1498 @@
+PAPER1_V5_2_ROOT_CAUSE_CONTEXT
+RUN_ID=paper1_v5_1mv_s002_bw04_oracle
+TRUST_SHA256=0a2627bdaacad03e582bb039eeb2fb3ac73d33d20b77e96881ebceec64aae437
+TWIN_SHA256=39e6729af233032ab9c58851c9682252f02d36eed739eb2ec769e165659da34c
+SOURCE_AND_SCHEMA_INSPECTION_ONLY=True
+PERFORMANCE_OUTCOME_COLUMNS_READ=False
+PERFORMANCE_OUTCOMES_INSPECTED=False
+
+===== METRICCONFIG =====
+00047: class MetricConfig:
+00048:     # --- THE TOGGLE: which exposure drives s(t), T(t) and the main AUCs ---
+00049:     scalarization: str = "lmax"        # "lmax" | "trace"
+00050:     exposure_form: str = "mean"        # "mean" | "delta"  (Prop. 8)
+00051: 
+00052:     eps: float = 5.688e-3              # MUST satisfy Eq. (16); see check_feasibility
+00053:     omega: float = 0.02                # per-update state increment bound, p.u.
+00054:     r0: float = 1.0                    # residual normalizer (shared)
+00055:     u0_lmax: float = 1.0               # exposure normalizer, lmax form
+00056:     u0_trace: float = 1.0              # exposure normalizer, trace form
+00057:     T_th: float = 0.70                 # alarm threshold
+00058:     delta: float = 0.05                # confidence level for the delta form
+00059:     b_min: float = 0.0                 # bandwidth feasibility threshold
+00060: 
+00061:     n_telemetry: Optional[int] = None  # first n_tel channels are starvable;
+00062:                                        # the rest are pseudo (Delta=0, g=1)
+00063:     ridge: float = 0.0                 # optional estimator ridge if rank-deficient
+00064: 
+00065:     def u0(self) -> float:
+00066:         return self.u0_lmax if self.scalarization == "lmax" else self.u0_trace
+
+===== TRUSTMETRIC.__init__ LINES 73-109 =====
+00073:     def __init__(self, H, sigma2, Q, cfg: MetricConfig):
+00074:         self.H = np.asarray(H, float)
+00075:         self.s2 = np.asarray(sigma2, float)
+00076:         self.cfg = cfg
+00077:         self.m, self.n = self.H.shape
+00078: 
+00079:         # Lemma 1: tau_i = sigma_i^2 / (h_i' Q h_i); guard h'Qh == 0 -> g_i == 1
+00080:         hQh = np.einsum("ij,jk,ik->i", self.H, np.asarray(Q, float), self.H)
+00081:         self.tau = np.where(hQh > 0, self.s2 / np.maximum(hQh, 1e-300), np.inf)
+00082: 
+00083:         # rank-1 helpers (never form the m x n x n tensor)
+00084:         self.h2 = np.einsum("ij,ij->i", self.H, self.H)
+00085:         self.Kn = self.h2 / self.s2                    # ||K_i||_2, exact
+00086:         self._Kn_sorted = np.sort(self.Kn)[::-1]
+00087: 
+00088:         # perfect-telemetry spectrum and both baselines
+00089:         lam_inf = self._spectrum(np.ones(self.m))
+00090:         self.lam_inf = lam_inf
+00091:         self.L0 = 1.0 / (lam_inf[0] + cfg.eps)                 # lam_max((G_inf+eI)^-1)
+00092:         self.T0 = float(np.sum(1.0 / (lam_inf + cfg.eps)))     # tr((G_inf+eI)^-1)
+00093:         self.nu_l = 1.0 / self.L0
+00094:         self.nu_t = 1.0 / self.T0
+00095: 
+00096:         # ceilings (Prop. 6 and its trace analogue)
+00097:         self.u_max_lmax = cfg.omega**2 * lam_inf[0] / cfg.eps
+00098:         self.u_max_trace = cfg.omega**2 * (self.n / (cfg.eps * self.T0) - 1.0)
+00099: 
+00100:         # achievable maxima with pseudo-measurements always present
+00101:         if cfg.n_telemetry:
+00102:             w = np.ones(self.m); w[:cfg.n_telemetry] = 0.0
+00103:             lam_p = self._spectrum(w)
+00104:             self.u_ach_lmax = cfg.omega**2 * self.nu_l * max(
+00105:                 1.0 / (lam_p[0] + cfg.eps) - self.L0, 0.0)
+00106:             self.u_ach_trace = cfg.omega**2 * self.nu_t * max(
+00107:                 float(np.sum(1.0 / (lam_p + cfg.eps))) - self.T0, 0.0)
+00108:         else:
+00109:             self.u_ach_lmax, self.u_ach_trace = self.u_max_lmax, self.u_max_trace
+
+===== TRUSTMETRIC._delta_floor LINES 139-162 =====
+00139:     def _delta_floor(self, p, gamma) -> np.ndarray:
+00140:         """Prop. 8 generalised: apply the deflation SPECTRUM-WISE.
+00141: 
+00142:         Weyl gives lam_i(G_real) >= lam_i(G) - s_delta for EVERY i, and the
+00143:         same for the loss-quantile constituent, so both the lam_max and the
+00144:         trace bounds follow from one floored spectrum. Envelopes are the
+00145:         gamma-free, p-monotone ones (Eq. 10) -- do NOT reintroduce the tight
+00146:         gamma-weighted forms, they are non-monotone.
+00147:         """
+00148:         cfg = self.cfg
+00149:         p = np.asarray(p, float)
+00150:         lam = self._spectrum((1.0 - p) * gamma)
+00151:         phi = np.where(p <= 0.5, p * (1.0 - p), 0.25)          # nondecreasing in p
+00152:         Vbar = float(np.max(self._spectrum(phi * self.Kn)))    # ||sum phi_i K_i^2||
+00153:         stoch = self.Kn[p > 0]
+00154:         Lbar = float(stoch.max()) if stoch.size else 0.0       # gamma-free
+00155:         lg = np.log(4.0 * self.n / cfg.delta)
+00156:         s_d = np.sqrt(2.0 * Vbar * lg) + (2.0 * Lbar / 3.0) * lg
+00157:         f_bern = np.maximum(lam - s_d, 0.0)
+00158: 
+00159:         k = int(binom.ppf(1.0 - cfg.delta / 2.0, self.m, float(p.mean()))) if p.max() > 0 else 0
+00160:         Lam = float(self._Kn_sorted[:k].sum()) if k else 0.0   # UNWEIGHTED norms
+00161:         f_quant = np.maximum(self._spectrum(gamma) - Lam, 0.0)
+00162:         return np.maximum(f_bern, f_quant)                      # combined, Eq. (11)
+
+===== TRUSTMETRIC.estimate LINES 165-324 =====
+00165:     def estimate(self, z, rx, gamma):
+00166:         """Solve the age-aware WLS problem without forming normal equations.
+00167: 
+00168:         Rows are scaled by sqrt(gamma / sigma2), and the resulting
+00169:         least-squares system is solved directly by rank-revealing SVD.
+00170:         The Boolean return value means full numerical column rank and
+00171:         a finite solution; a LAPACK call merely returning is not enough.
+00172:         """
+00173:         z_array = np.asarray(z, dtype=float).reshape(-1)
+00174:         rx_array = np.asarray(rx, dtype=bool).reshape(-1)
+00175:         gamma_array = np.asarray(gamma, dtype=float).reshape(-1)
+00176: 
+00177:         if (
+00178:             len(z_array) != self.m
+00179:             or len(rx_array) != self.m
+00180:             or len(gamma_array) != self.m
+00181:         ):
+00182:             raise ValueError(
+00183:                 "z, rx, and gamma must match the measurement dimension"
+00184:             )
+00185: 
+00186:         idx = np.flatnonzero(rx_array)
+00187:         raw_weights = gamma_array[idx] / self.s2[idx]
+00188: 
+00189:         valid = (
+00190:             np.isfinite(raw_weights)
+00191:             & (raw_weights > 0.0)
+00192:             & np.isfinite(z_array[idx])
+00193:         )
+00194: 
+00195:         idx = idx[valid]
+00196:         weights = raw_weights[valid]
+00197: 
+00198:         rcond = float(np.sqrt(np.finfo(float).eps))
+00199:         ridge = float(self.cfg.ridge)
+00200: 
+00201:         if not np.isfinite(ridge) or ridge < 0.0:
+00202:             raise ValueError(
+00203:                 "estimator ridge must be finite and nonnegative"
+00204:             )
+00205: 
+00206:         self.last_estimator_solver = "weighted_lstsq_svd"
+00207:         self.last_estimator_rcond = rcond
+00208:         self.last_estimator_effective_rows = int(len(idx))
+00209:         self.last_estimator_rank = 0
+00210:         self.last_estimator_condition = float("inf")
+00211:         self.last_estimator_singular_max = float("nan")
+00212:         self.last_estimator_singular_min = float("nan")
+00213:         self.last_estimator_residual_norm = float("nan")
+00214: 
+00215:         if len(idx) == 0:
+00216:             return np.full(self.n, np.nan), False
+00217: 
+00218:         square_root_weights = np.sqrt(weights)
+00219:         weighted_h = (
+00220:             self.H[idx]
+00221:             * square_root_weights[:, None]
+00222:         )
+00223:         weighted_z = (
+00224:             z_array[idx]
+00225:             * square_root_weights
+00226:         )
+00227: 
+00228:         if (
+00229:             not np.all(np.isfinite(weighted_h))
+00230:             or not np.all(np.isfinite(weighted_z))
+00231:         ):
+00232:             return np.full(self.n, np.nan), False
+00233: 
+00234:         if ridge > 0.0:
+00235:             weighted_h = np.vstack(
+00236:                 [
+00237:                     weighted_h,
+00238:                     np.eye(self.n) * np.sqrt(ridge),
+00239:                 ]
+00240:             )
+00241:             weighted_z = np.concatenate(
+00242:                 [
+00243:                     weighted_z,
+00244:                     np.zeros(self.n),
+00245:                 ]
+00246:             )
+00247: 
+00248:         try:
+00249:             (
+00250:                 candidate,
+00251:                 _,
+00252:                 rank,
+00253:                 singular_values,
+00254:             ) = np.linalg.lstsq(
+00255:                 weighted_h,
+00256:                 weighted_z,
+00257:                 rcond=rcond,
+00258:             )
+00259:         except np.linalg.LinAlgError:
+00260:             return np.full(self.n, np.nan), False
+00261: 
+00262:         candidate = np.asarray(
+00263:             candidate,
+00264:             dtype=float,
+00265:         ).reshape(-1)
+00266: 
+00267:         rank = int(rank)
+00268:         singular_values = np.asarray(
+00269:             singular_values,
+00270:             dtype=float,
+00271:         )
+00272: 
+00273:         if len(singular_values) > 0:
+00274:             singular_max = float(
+00275:                 singular_values[0]
+00276:             )
+00277:             singular_min = float(
+00278:                 singular_values[-1]
+00279:             )
+00280: 
+00281:             condition = (
+00282:                 float(singular_max / singular_min)
+00283:                 if singular_min > 0.0
+00284:                 else float("inf")
+00285:             )
+00286:         else:
+00287:             singular_max = float("nan")
+00288:             singular_min = float("nan")
+00289:             condition = float("inf")
+00290: 
+00291:         candidate_finite = bool(
+00292:             candidate.shape == (self.n,)
+00293:             and np.all(np.isfinite(candidate))
+00294:         )
+00295: 
+00296:         residual_norm = (
+00297:             float(
+00298:                 np.linalg.norm(
+00299:                     weighted_h @ candidate
+00300:                     - weighted_z
+00301:                 )
+00302:             )
+00303:             if candidate_finite
+00304:             else float("nan")
+00305:         )
+00306: 
+00307:         full_numerical_rank = bool(
+00308:             rank == self.n
+00309:             and np.isfinite(condition)
+00310:             and condition <= 1.0 / rcond
+00311:         )
+00312: 
+00313:         self.last_estimator_rank = rank
+00314:         self.last_estimator_condition = condition
+00315:         self.last_estimator_singular_max = singular_max
+00316:         self.last_estimator_singular_min = singular_min
+00317:         self.last_estimator_residual_norm = residual_norm
+00318: 
+00319:         solved_reliably = bool(
+00320:             candidate_finite
+00321:             and full_numerical_rank
+00322:         )
+00323: 
+00324:         return candidate, solved_reliably
+
+===== TRUSTMETRIC.update LINES 326-373 =====
+00326:     def update(self, p, Delta, b, z, rx=None, x_hat=None) -> dict:
+00327:         """One twin update. Returns BOTH exposures plus the active s(t), T(t)."""
+00328:         cfg = self.cfg
+00329:         rho, gamma = self.rho_of(p, Delta, b)
+00330:         if rx is None:                       # received AND current
+00331:             rx = (np.asarray(p, float) < 1.0) & (np.asarray(b, float) >= cfg.b_min)
+00332:         rx = np.asarray(rx, bool)
+00333: 
+00334:         observable = True
+00335:         if x_hat is None:
+00336:             x_hat, observable = self.estimate(z, rx, gamma)
+00337: 
+00338:         # Eq. (12): g-weighted, normalized by TOTAL m. E[r] = (|M_rx| - n)/m
+00339:         idx = np.flatnonzero(rx)
+00340:         resid = np.asarray(z, float)[idx] - self.H[idx] @ x_hat
+00341:         r = float(np.sum(gamma[idx] * resid**2 / self.s2[idx]) / self.m)
+00342: 
+00343:         # one spectrum serves every exposure
+00344:         lam_mean = self._spectrum(rho)
+00345:         lam_dlt = self._delta_floor(p, gamma) if cfg.exposure_form == "delta" else None
+00346:         lam_use = lam_dlt if lam_dlt is not None else lam_mean
+00347: 
+00348:         u_l = cfg.omega**2 * self.nu_l * max(1.0 / (lam_use[0] + cfg.eps) - self.L0, 0.0)
+00349:         u_t = cfg.omega**2 * self.nu_t * max(
+00350:             float(np.sum(1.0 / (lam_use + cfg.eps))) - self.T0, 0.0)
+00351:         # always report the mean form too, so a delta run stays comparable
+00352:         u_l_mean = cfg.omega**2 * self.nu_l * max(1.0 / (lam_mean[0] + cfg.eps) - self.L0, 0.0)
+00353:         u_t_mean = cfg.omega**2 * self.nu_t * max(
+00354:             float(np.sum(1.0 / (lam_mean + cfg.eps))) - self.T0, 0.0)
+00355: 
+00356:         u = u_l if cfg.scalarization == "lmax" else u_t
+00357:         s = r / cfg.r0 + u / cfg.u0()
+00358:         T = float(np.exp(-s))
+00359: 
+00360:         n_rx = int(rx.sum())
+00361:         n_tel = cfg.n_telemetry or self.m
+00362:         return dict(
+00363:             T=T, s=s, r=r, u=u, alarm=bool(T < cfg.T_th),
+00364:             u_lmax=u_l, u_trace=u_t, u_lmax_mean=u_l_mean, u_trace_mean=u_t_mean,
+00365:             s_lmax=r / cfg.r0 + u_l / cfg.u0_lmax,
+00366:             s_trace=r / cfg.r0 + u_t / cfg.u0_trace,
+00367:             lam_min=float(lam_use[0]), trace_inv=float(np.sum(1.0 / (lam_use + cfg.eps))),
+00368:             n_rx=n_rx, x_hat=x_hat, observable=observable,
+00369:             # trivial controls B1/B2 over the STARVABLE set only
+00370:             b1=float(rx[:n_tel].mean()),
+00371:             b2=float(np.mean(np.asarray(Delta, float)[:n_tel])),
+00372:             E_r_expected=(n_rx - self.n) / self.m,
+00373:         )
+
+===== TRUSTMETRIC.check_feasibility LINES 376-409 =====
+00376:     def check_feasibility(self, verbose=True) -> dict:
+00377:         """Eq. (16) for lmax and its trace analogue. Both must hold for the
+00378:         chosen scalarization or the metric cannot alarm under total starvation."""
+00379:         cfg = self.cfg
+00380:         lg = np.log(1.0 / cfg.T_th)
+00381:         need_l = cfg.omega**2 * self.lam_inf[0] / (cfg.u0_lmax * lg)
+00382:         # trace: u_max_tr/u0 > ln(1/T_th)  =>  eps < n / (T0 * (1 + u0*ln/w^2))
+00383:         need_t = self.n / (self.T0 * (1.0 + cfg.u0_trace * lg / cfg.omega**2))
+00384:         out = dict(eps=cfg.eps, eps_max_lmax=float(need_l), eps_max_trace=float(need_t),
+00385:                    ok_lmax=cfg.eps < need_l, ok_trace=cfg.eps < need_t,
+00386:                    u_max_lmax=self.u_max_lmax, u_max_trace=self.u_max_trace,
+00387:                    u_achievable_lmax=self.u_ach_lmax, u_achievable_trace=self.u_ach_trace)
+00388:         if verbose:
+00389:             print(f"  eps = {cfg.eps:.6g}")
+00390:             print(f"    lmax : limit {need_l:.6g}  -> {'OK' if out['ok_lmax'] else 'VIOLATED'}"
+00391:                   f"   ceiling {self.u_max_lmax:.4g}   achievable {self.u_ach_lmax:.4g}")
+00392:             print(f"    trace: limit {need_t:.6g}  -> {'OK' if out['ok_trace'] else 'VIOLATED'}"
+00393:                   f"   ceiling {self.u_max_trace:.4g}   achievable {self.u_ach_trace:.4g}")
+00394:             # is the delta-confident form usable at all on this feeder?
+00395:             if cfg.n_telemetry:
+00396:                 pp = np.zeros(self.m); pp[:cfg.n_telemetry] = 0.05
+00397:                 _, gg = self.rho_of(pp, np.zeros(self.m), np.full(self.m, np.inf))
+00398:                 fl = self._delta_floor(pp, gg)
+00399:                 dead = int(np.sum(fl <= 0))
+00400:                 if dead > 0.5 * self.n:
+00401:                     print(f"    [WARN] delta-confident floor collapses {dead}/{self.n} "
+00402:                           f"directions at p=0.05:\n           u^delta is VACUOUS here. Use "
+00403:                           f"exposure_form='mean' as primary and report\n           the delta "
+00404:                           f"form only as a conservative check.")
+00405:             if self.u_ach_lmax < 0.5 * self.u_max_lmax:
+00406:                 print("    note: pseudo-measurements keep G away from 0, so the ACHIEVABLE"
+00407:                       "\n          exposure is below the theoretical ceiling. Calibrate u0"
+00408:                       "\n          against achievable values, not against the ceiling.")
+00409:         return out
+
+===== TRUSTMETRIC.calibrate_u0 LINES 411-428 =====
+00411:     def calibrate_u0(self, patterns, target_frac=1.0, which="both"):
+00412:         """Set u0 so the given (p, Delta, b) boundary patterns land at T_th.
+00413:         u0 = u_boundary / (ln(1/T_th) - r/r0). Calibrate on the ORACLE,
+00414:         ample-comms regime only -- never on the evaluation set."""
+00415:         cfg = self.cfg
+00416:         lg = np.log(1.0 / cfg.T_th)
+00417:         ul, ut = [], []
+00418:         for (p, D, b) in patterns:
+00419:             rho, gamma = self.rho_of(p, D, b)
+00420:             lam = self._spectrum(rho)
+00421:             ul.append(cfg.omega**2 * self.nu_l * max(1.0 / (lam[0] + cfg.eps) - self.L0, 0.0))
+00422:             ut.append(cfg.omega**2 * self.nu_t * max(
+00423:                 float(np.sum(1.0 / (lam + cfg.eps))) - self.T0, 0.0))
+00424:         if which in ("both", "lmax") and np.median(ul) > 0:
+00425:             cfg.u0_lmax = float(np.median(ul) / (target_frac * lg))
+00426:         if which in ("both", "trace") and np.median(ut) > 0:
+00427:             cfg.u0_trace = float(np.median(ut) / (target_frac * lg))
+00428:         return cfg.u0_lmax, cfg.u0_trace
+
+===== PRODUCTIONTWIN.__init__ LINES 513-557 =====
+00513:     def __init__(
+00514:         self,
+00515:         *,
+00516:         H: np.ndarray,
+00517:         sigma2: np.ndarray,
+00518:         Q: np.ndarray,
+00519:         n_telemetry: int,
+00520:         P: np.ndarray,
+00521:         B: np.ndarray,
+00522:         scenarios: pd.DataFrame,
+00523:         metric: TrustMetric,
+00524:         exposure: FastExposure,
+00525:         b_min: float,
+00526:         beta1: float,
+00527:         beta2: float,
+00528:         bandwidth_cap_bps: float,
+00529:         bandwidth_level: str,
+00530:         hold_factor: float,
+00531:         lnr_enabled: bool,
+00532:         initial_state: np.ndarray,
+00533:     ) -> None:
+00534:         self.H = H
+00535:         self.sigma2 = sigma2
+00536:         self.Q = Q
+00537:         self.n_telemetry = n_telemetry
+00538:         self.P = P
+00539:         self.B = B
+00540:         self.scenarios = scenarios
+00541:         self.metric = metric
+00542:         self.exposure = exposure
+00543:         self.b_min = b_min
+00544:         self.beta1 = beta1
+00545:         self.beta2 = beta2
+00546:         self.bandwidth_cap_bps = bandwidth_cap_bps
+00547:         self.bandwidth_level = bandwidth_level
+00548:         self.hold_factor = hold_factor
+00549:         self.lnr_enabled = lnr_enabled
+00550:         self.m, self.n = H.shape
+00551:         self.x_previous = np.asarray(initial_state, dtype=float).copy()
+00552:         self.samples: list[TelemetrySample | None] = [None] * n_telemetry
+00553:         self.received_messages = 0
+00554:         self.accepted_messages = 0
+00555:         self.stale_messages = 0
+00556:         self.malformed_messages = 0
+00557:         self.new_since_update = 0
+
+===== PRODUCTIONTWIN.accept_sample LINES 559-571 =====
+00559:     def accept_sample(self, sample: TelemetrySample) -> bool:
+00560:         self.received_messages += 1
+00561:         previous = self.samples[sample.channel_id]
+00562:         if previous is not None:
+00563:             old_key = (previous.source_time, previous.sequence)
+00564:             new_key = (sample.source_time, sample.sequence)
+00565:             if new_key <= old_key:
+00566:                 self.stale_messages += 1
+00567:                 return False
+00568:         self.samples[sample.channel_id] = sample
+00569:         self.accepted_messages += 1
+00570:         self.new_since_update += 1
+00571:         return True
+
+===== PRODUCTIONTWIN._measurements LINES 577-612 =====
+00577:     def _measurements(
+00578:         self,
+00579:         *,
+00580:         logical_time: float,
+00581:         event_id: int,
+00582:     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+00583:         p = np.asarray(self.P[event_id], dtype=float).copy()
+00584:         bandwidth = np.asarray(self.B[event_id], dtype=float).copy()
+00585:         feasible = bandwidth > self.b_min
+00586:         # TrustMetric uses b >= cfg.b_min. Mapping every starved value to zero
+00587:         # preserves the net_fed rule b <= bMin -> starved, including equality.
+00588:         bandwidth_effective = np.where(feasible, bandwidth, 0.0)
+00589: 
+00590:         z = np.zeros(self.m, dtype=float)
+00591:         age = np.zeros(self.m, dtype=float)
+00592:         rx = np.zeros(self.m, dtype=bool)
+00593: 
+00594:         for channel, sample in enumerate(self.samples):
+00595:             if sample is None:
+00596:                 age[channel] = logical_time
+00597:                 continue
+00598:             z[channel] = sample.value
+00599:             age[channel] = max(logical_time - sample.source_time, 0.0)
+00600:             rx[channel] = bool(feasible[channel])
+00601: 
+00602:         # Local pseudo-measurements are generated from the prior twin state.
+00603:         # They are fresh, never traverse the network, and use their feeder
+00604:         # variances in the common estimator.
+00605:         if self.n_telemetry < self.m:
+00606:             z[self.n_telemetry :] = self.H[self.n_telemetry :] @ self.x_previous
+00607:             age[self.n_telemetry :] = 0.0
+00608:             rx[self.n_telemetry :] = True
+00609:             p[self.n_telemetry :] = 0.0
+00610:             bandwidth_effective[self.n_telemetry :] = max(self.b_min + 1.0, 1.0e12)
+00611: 
+00612:         return z, age, rx, p, bandwidth_effective
+
+===== PRODUCTIONTWIN._estimate LINES 614-773 =====
+00614:     def _estimate(
+00615:         self,
+00616:         z: np.ndarray,
+00617:         rx: np.ndarray,
+00618:         gamma: np.ndarray,
+00619:     ) -> tuple[np.ndarray, bool, bool]:
+00620:         candidate, solved_exactly = self.metric.estimate(z, rx, gamma)
+00621:         candidate_array = np.asarray(candidate, dtype=float)
+00622:         candidate_finite = bool(np.all(np.isfinite(candidate_array)))
+00623: 
+00624:         had_valid_estimate = bool(
+00625:             getattr(self, "has_valid_estimate", False)
+00626:         )
+00627: 
+00628:         previous_norm = float(np.linalg.norm(self.x_previous))
+00629: 
+00630:         omega = float(self.metric.cfg.omega)
+00631:         if not math.isfinite(omega) or omega <= 0.0:
+00632:             raise RuntimeError(
+00633:                 "metric omega must be finite and positive"
+00634:             )
+00635: 
+00636:         model_increment_scale = max(
+00637:             math.sqrt(self.n) * omega,
+00638:             1e-12,
+00639:         )
+00640:         jump_limit = float(
+00641:             self.hold_factor * model_increment_scale
+00642:         )
+00643: 
+00644:         if candidate_finite:
+00645:             candidate_norm = float(np.linalg.norm(candidate_array))
+00646:         else:
+00647:             candidate_norm = float("nan")
+00648: 
+00649:         if had_valid_estimate and candidate_finite:
+00650:             jump_norm = float(
+00651:                 np.linalg.norm(candidate_array - self.x_previous)
+00652:             )
+00653:         else:
+00654:             jump_norm = float("nan")
+00655: 
+00656:         rx_array = np.asarray(rx, dtype=bool).reshape(-1)
+00657:         configured_telemetry = int(
+00658:             getattr(self, "n_telemetry", 0)
+00659:         )
+00660:         external_total = min(configured_telemetry, len(rx_array))
+00661:         external_received = int(
+00662:             np.count_nonzero(rx_array[:external_total])
+00663:         )
+00664:         pseudo_received = int(
+00665:             np.count_nonzero(rx_array[external_total:])
+00666:         )
+00667: 
+00668:         if external_received > 0:
+00669:             external_support_state = "external_present"
+00670:         elif pseudo_received > 0:
+00671:             external_support_state = "pseudo_only"
+00672:         else:
+00673:             external_support_state = "no_received_measurements"
+00674: 
+00675:         if not solved_exactly:
+00676:             decision_reason = "solve_inexact"
+00677:             held = True
+00678:         elif not candidate_finite:
+00679:             decision_reason = "nonfinite_candidate"
+00680:             held = True
+00681:         elif not had_valid_estimate:
+00682:             decision_reason = "bootstrap_accept"
+00683:             held = False
+00684:         elif jump_norm > jump_limit:
+00685:             decision_reason = "jump_guard"
+00686:             held = True
+00687:         else:
+00688:             decision_reason = "accepted"
+00689:             held = False
+00690: 
+00691:         self.last_hold_reason = decision_reason
+00692:         self.last_candidate_norm = candidate_norm
+00693:         self.last_previous_norm = previous_norm
+00694:         self.last_jump_norm = jump_norm
+00695:         self.last_jump_limit = jump_limit
+00696:         self.last_jump_guard_policy = "fixed_model_increment"
+00697:         self.last_model_increment_scale = model_increment_scale
+00698:         self.last_candidate_finite = candidate_finite
+00699:         self.last_solved_exactly = bool(solved_exactly)
+00700:         self.last_estimator_reliable = bool(solved_exactly)
+00701:         self.last_estimator_solver = str(
+00702:             getattr(
+00703:                 self.metric,
+00704:                 "last_estimator_solver",
+00705:                 "unavailable",
+00706:             )
+00707:         )
+00708:         self.last_estimator_rcond = float(
+00709:             getattr(
+00710:                 self.metric,
+00711:                 "last_estimator_rcond",
+00712:                 float("nan"),
+00713:             )
+00714:         )
+00715:         self.last_estimator_effective_rows = int(
+00716:             getattr(
+00717:                 self.metric,
+00718:                 "last_estimator_effective_rows",
+00719:                 0,
+00720:             )
+00721:         )
+00722:         self.last_estimator_rank = int(
+00723:             getattr(
+00724:                 self.metric,
+00725:                 "last_estimator_rank",
+00726:                 0,
+00727:             )
+00728:         )
+00729:         self.last_estimator_condition = float(
+00730:             getattr(
+00731:                 self.metric,
+00732:                 "last_estimator_condition",
+00733:                 float("inf"),
+00734:             )
+00735:         )
+00736:         self.last_estimator_singular_max = float(
+00737:             getattr(
+00738:                 self.metric,
+00739:                 "last_estimator_singular_max",
+00740:                 float("nan"),
+00741:             )
+00742:         )
+00743:         self.last_estimator_singular_min = float(
+00744:             getattr(
+00745:                 self.metric,
+00746:                 "last_estimator_singular_min",
+00747:                 float("nan"),
+00748:             )
+00749:         )
+00750:         self.last_estimator_residual_norm = float(
+00751:             getattr(
+00752:                 self.metric,
+00753:                 "last_estimator_residual_norm",
+00754:                 float("nan"),
+00755:             )
+00756:         )
+00757:         self.last_external_received_count = external_received
+00758:         self.last_external_total = external_total
+00759:         self.last_pseudo_received_count = pseudo_received
+00760:         self.last_external_support_state = external_support_state
+00761:         self.last_pseudo_only = external_support_state == "pseudo_only"
+00762:         self.last_external_support_fraction = (
+00763:             float(external_received / external_total)
+00764:             if external_total > 0
+00765:             else 0.0
+00766:         )
+00767: 
+00768:         if held:
+00769:             return self.x_previous.copy(), True, solved_exactly
+00770: 
+00771:         self.x_previous = candidate_array.copy()
+00772:         self.has_valid_estimate = True
+00773:         return self.x_previous.copy(), False, solved_exactly
+
+===== PRODUCTIONTWIN._residual_statistics LINES 775-817 =====
+00775:     def _residual_statistics(
+00776:         self,
+00777:         z: np.ndarray,
+00778:         rx: np.ndarray,
+00779:         gamma: np.ndarray,
+00780:         x_hat: np.ndarray,
+00781:     ) -> dict[str, float]:
+00782:         idx = np.flatnonzero(rx & (gamma > 0.0))
+00783:         if idx.size == 0:
+00784:             return {"r": 0.0, "chi2": 0.0, "huber": 0.0, "lnr": float("nan")}
+00785: 
+00786:         residual = z[idx] - self.H[idx] @ x_hat
+00787:         standardized = residual / np.sqrt(
+00788:             self.sigma2[idx] / np.maximum(gamma[idx], 1e-300)
+00789:         )
+00790:         chi2 = float(np.sum(standardized**2) / self.m)
+00791:         absolute = np.abs(standardized)
+00792:         huber_k = 1.345
+00793:         huber = float(
+00794:             np.sum(
+00795:                 np.where(
+00796:                     absolute <= huber_k,
+00797:                     0.5 * absolute**2,
+00798:                     huber_k * (absolute - 0.5 * huber_k),
+00799:                 )
+00800:             )
+00801:             / self.m
+00802:         )
+00803: 
+00804:         lnr = float("nan")
+00805:         if self.lnr_enabled:
+00806:             Hr = self.H[idx]
+00807:             weights = gamma[idx] / self.sigma2[idx]
+00808:             information = Hr.T @ (Hr * weights[:, None])
+00809:             covariance = np.linalg.pinv(information, hermitian=True)
+00810:             leverage = np.einsum("ij,jk,ik->i", Hr, covariance, Hr)
+00811:             omega = np.maximum(
+00812:                 self.sigma2[idx] / np.maximum(gamma[idx], 1e-300) - leverage,
+00813:                 1e-30,
+00814:             )
+00815:             lnr = float(np.max(np.abs(residual) / np.sqrt(omega)))
+00816: 
+00817:         return {"r": chi2, "chi2": chi2, "huber": huber, "lnr": lnr}
+
+===== PRODUCTIONTWIN.update LINES 819-962 =====
+00819:     def update(
+00820:         self,
+00821:         *,
+00822:         logical_time: float,
+00823:         step_index: int,
+00824:         steps_per_event: int,
+00825:     ) -> tuple[dict[str, Any], np.ndarray]:
+00826:         event_id = step_index // steps_per_event
+00827:         z, age, rx, p, bandwidth = self._measurements(
+00828:             logical_time=logical_time,
+00829:             event_id=event_id,
+00830:         )
+00831:         gamma = self.metric.g_of(age) * (bandwidth >= self.metric.cfg.b_min)
+00832:         x_hat, held, solved_exactly = self._estimate(z, rx, gamma)
+00833:         residual = self._residual_statistics(z, rx, gamma, x_hat)
+00834:         exposure = self.exposure.evaluate(p, gamma)
+00835: 
+00836:         r = residual["r"]
+00837:         b1 = float(np.mean(rx[: self.n_telemetry]))
+00838:         b2 = float(np.mean(age[: self.n_telemetry]))
+00839:         s_lmax = r / self.metric.cfg.r0 + exposure["u_lmax"] / self.metric.cfg.u0_lmax
+00840:         s_trace = float("nan")
+00841:         if math.isfinite(exposure["u_trace"]):
+00842:             s_trace = r / self.metric.cfg.r0 + exposure["u_trace"] / self.metric.cfg.u0_trace
+00843:         s_delta_lmax = float("nan")
+00844:         s_delta_trace = float("nan")
+00845:         if math.isfinite(exposure["u_lmax_delta"]):
+00846:             s_delta_lmax = (
+00847:                 r / self.metric.cfg.r0
+00848:                 + exposure["u_lmax_delta"] / self.metric.cfg.u0_lmax
+00849:             )
+00850:         if math.isfinite(exposure["u_trace_delta"]):
+00851:             s_delta_trace = (
+00852:                 r / self.metric.cfg.r0
+00853:                 + exposure["u_trace_delta"] / self.metric.cfg.u0_trace
+00854:             )
+00855:         active_s = s_lmax if self.metric.cfg.scalarization == "lmax" else s_trace
+00856:         if not math.isfinite(active_s):
+00857:             raise RuntimeError("active trust score is nonfinite")
+00858: 
+00859:         scenario = self.scenarios.iloc[event_id]
+00860:         row: dict[str, Any] = {
+00861:             "time": float(logical_time),
+00862:             "step_index": int(step_index),
+00863:             "event_id": int(event_id),
+00864:             "step_in_event": int(step_index % steps_per_event),
+00865:             "pattern_id": int(event_id),
+00866:             "arm": None if pd.isna(scenario.get("arm")) else str(scenario.get("arm")),
+00867:             "regime": None
+00868:             if pd.isna(scenario.get("regime"))
+00869:             else str(scenario.get("regime")),
+00870:             "stratum": None
+00871:             if pd.isna(scenario.get("stratum"))
+00872:             else int(scenario.get("stratum")),
+00873:             "bandwidth_level": self.bandwidth_level,
+00874:             "bandwidth_cap_bps": self.bandwidth_cap_bps,
+00875:             "r": r,
+00876:             "chi2": residual["chi2"],
+00877:             "huber": residual["huber"],
+00878:             "lnr": residual["lnr"],
+00879:             "u_lmax": exposure["u_lmax"],
+00880:             "u_trace": exposure["u_trace"],
+00881:             "u_lmax_mean": exposure["u_lmax_mean"],
+00882:             "u_trace_mean": exposure["u_trace_mean"],
+00883:             "u_lmax_delta": exposure["u_lmax_delta"],
+00884:             "u_trace_delta": exposure["u_trace_delta"],
+00885:             "s_lmax": s_lmax,
+00886:             "s_trace": s_trace,
+00887:             "s_delta_lmax": s_delta_lmax,
+00888:             "s_delta_trace": s_delta_trace,
+00889:             "T_delta_lmax": float("nan")
+00890:             if not math.isfinite(s_delta_lmax)
+00891:             else float(math.exp(-min(s_delta_lmax, 745.0))),
+00892:             "alarm_delta_lmax": False
+00893:             if not math.isfinite(s_delta_lmax)
+00894:             else bool(
+00895:                 s_delta_lmax > math.log(1.0 / self.metric.cfg.T_th)
+00896:             ),
+00897:             "s": active_s,
+00898:             "T": float(math.exp(-min(active_s, 745.0))),
+00899:             "alarm": bool(active_s > math.log(1.0 / self.metric.cfg.T_th)),
+00900:             "sB1": r / self.metric.cfg.r0 + self.beta1 * (1.0 - b1),
+00901:             "sB2": r / self.metric.cfg.r0 + self.beta2 * b2,
+00902:             "s_gated_lmax": b1 * r / self.metric.cfg.r0
+00903:             + exposure["u_lmax"] / self.metric.cfg.u0_lmax,
+00904:             "s_gated_trace": float("nan")
+00905:             if not math.isfinite(exposure["u_trace"])
+00906:             else b1 * r / self.metric.cfg.r0
+00907:             + exposure["u_trace"] / self.metric.cfg.u0_trace,
+00908:             "b1": b1,
+00909:             "b2": b2,
+00910:             "n_rx": int(rx.sum()),
+00911:             "n_rx_telemetry": int(rx[: self.n_telemetry].sum()),
+00912:             "cached_telemetry": int(sum(sample is not None for sample in self.samples)),
+00913:             "new_telemetry": int(self.new_since_update),
+00914:             "held": bool(held),
+00915:             "solve_exact": bool(solved_exactly),
+00916:             "estimator_reliable": self.last_estimator_reliable,
+00917:             "estimator_solver": self.last_estimator_solver,
+00918:             "estimator_rcond": self.last_estimator_rcond,
+00919:             "estimator_effective_rows": self.last_estimator_effective_rows,
+00920:             "estimator_rank": self.last_estimator_rank,
+00921:             "estimator_condition": self.last_estimator_condition,
+00922:             "estimator_singular_max": self.last_estimator_singular_max,
+00923:             "estimator_singular_min": self.last_estimator_singular_min,
+00924:             "estimator_residual_norm": self.last_estimator_residual_norm,
+00925:             "hold_reason": self.last_hold_reason,
+00926:             "state_update_accepted_step": not bool(held),
+00927:             "bootstrap_accept_step": self.last_hold_reason == "bootstrap_accept",
+00928:             "solve_inexact_hold_step": self.last_hold_reason == "solve_inexact",
+00929:             "nonfinite_candidate_hold_step": self.last_hold_reason == "nonfinite_candidate",
+00930:             "jump_guard_hold_step": self.last_hold_reason == "jump_guard",
+00931:             "candidate_norm": self.last_candidate_norm,
+00932:             "previous_norm": self.last_previous_norm,
+00933:             "jump_norm": self.last_jump_norm,
+00934:             "jump_limit": self.last_jump_limit,
+00935:             "jump_guard_policy": self.last_jump_guard_policy,
+00936:             "model_increment_scale": self.last_model_increment_scale,
+00937:             "external_received_count": self.last_external_received_count,
+00938:             "external_total": self.last_external_total,
+00939:             "external_support_fraction": self.last_external_support_fraction,
+00940:             "pseudo_received_count": self.last_pseudo_received_count,
+00941:             "pseudo_only_step": self.last_pseudo_only,
+00942:             "external_support_present_step": self.last_external_received_count > 0,
+00943:             "no_received_measurements_step": (
+00944:                 self.last_external_received_count == 0
+00945:                 and self.last_pseudo_received_count == 0
+00946:             ),
+00947:             "residual_available": bool(np.any(rx & (gamma > 0.0))),
+00948:             "mean_age_telemetry": b2,
+00949:             "max_age_telemetry": float(np.max(age[: self.n_telemetry])),
+00950:             "lam_min": exposure["lam_min"],
+00951:             "lam_min_mean": exposure["lam_min_mean"],
+00952:             "lam_min_delta": exposure["lam_min_delta"],
+00953:             "trace_inverse": exposure["trace_inverse"],
+00954:             "floor_kind": exposure["floor_kind"],
+00955:             "floor_deflation": exposure["floor_deflation"],
+00956:             "loss_quantile": int(exposure["loss_quantile"]),
+00957:             "delta_floor_kind": exposure["delta_floor_kind"],
+00958:             "delta_floor_deflation": exposure["delta_floor_deflation"],
+00959:             "delta_loss_quantile": int(exposure["delta_loss_quantile"]),
+00960:         }
+00961:         self.new_since_update = 0
+00962:         return row, x_hat
+
+===== TWIN_FUNCTION.parse_telemetry_payload LINES 112-162 =====
+00112: def parse_telemetry_payload(
+00113:     payload: str | bytes,
+00114:     *,
+00115:     arrival_time: float,
+00116:     n_telemetry: int,
+00117:     future_tolerance: float,
+00118: ) -> TelemetrySample:
+00119:     if isinstance(payload, bytes):
+00120:         try:
+00121:             text = payload.decode("utf-8")
+00122:         except UnicodeDecodeError as exc:
+00123:             raise ProtocolError("telemetry payload is not UTF-8") from exc
+00124:     else:
+00125:         text = str(payload)
+00126: 
+00127:     try:
+00128:         item = json.loads(text)
+00129:     except json.JSONDecodeError as exc:
+00130:         raise ProtocolError(f"telemetry payload is not valid JSON: {exc}") from exc
+00131:     if not isinstance(item, dict):
+00132:         raise ProtocolError("telemetry payload must be a JSON object")
+00133:     if item.get("schema") != TELEMETRY_SCHEMA:
+00134:         raise ProtocolError(
+00135:             f"telemetry schema must be {TELEMETRY_SCHEMA!r}, "
+00136:             f"got {item.get('schema')!r}"
+00137:         )
+00138: 
+00139:     channel_id = strict_int(item.get("channel_id"), "channel_id")
+00140:     if not 0 <= channel_id < n_telemetry:
+00141:         raise ProtocolError(
+00142:             f"channel_id {channel_id} is outside [0,{n_telemetry - 1}]"
+00143:         )
+00144:     value = finite_float(item.get("value"), "value")
+00145:     source_time = finite_float(item.get("source_time"), "source_time")
+00146:     sequence = strict_int(item.get("sequence", 0), "sequence")
+00147:     if sequence < 0:
+00148:         raise ProtocolError("sequence must be nonnegative")
+00149:     if source_time < 0.0:
+00150:         raise ProtocolError("source_time must be nonnegative")
+00151:     if source_time > arrival_time + future_tolerance:
+00152:         raise ProtocolError(
+00153:             f"source_time {source_time:.12g} is later than arrival/granted time "
+00154:             f"{arrival_time:.12g}"
+00155:         )
+00156:     return TelemetrySample(
+00157:         channel_id=channel_id,
+00158:         value=value,
+00159:         source_time=source_time,
+00160:         sequence=sequence,
+00161:         arrival_time=float(arrival_time),
+00162:     )
+
+===== TWIN_FUNCTION.aggregate_events LINES 992-1120 =====
+00992: def aggregate_events(scores: pd.DataFrame) -> pd.DataFrame:
+00993:     rows: list[dict[str, Any]] = []
+00994:     for _, block in scores.groupby("event_id", sort=True):
+00995:         first = block.iloc[0]
+00996:         row: dict[str, Any] = {
+00997:             "event_id": int(first["event_id"]),
+00998:             "pattern_id": int(first["pattern_id"]),
+00999:             "arm": first["arm"],
+01000:             "regime": first["regime"],
+01001:             "stratum": first["stratum"],
+01002:             "bandwidth_level": first["bandwidth_level"],
+01003:             "bandwidth_cap_bps": float(first["bandwidth_cap_bps"]),
+01004:             "T": float(block["T"].min()),
+01005:             "alarm": bool(block["alarm"].any()),
+01006:             "alarm_delta_lmax": bool(block["alarm_delta_lmax"].any()),
+01007:             "b1": float(block["b1"].min()),
+01008:             "n_rx": int(block["n_rx"].min()),
+01009:             "n_rx_telemetry": int(block["n_rx_telemetry"].min()),
+01010:             "held": float(block["held"].mean()),
+01011:             "held_any": bool(block["held"].any()),
+01012:             "solve_exact_fraction": float(block["solve_exact"].mean()),
+01013:             "solve_exact_all": bool(block["solve_exact"].all()),
+01014:             "estimator_reliable_fraction": float(
+01015:                 block["estimator_reliable"].mean()
+01016:             ),
+01017:             "estimator_reliable_all": bool(
+01018:                 block["estimator_reliable"].all()
+01019:             ),
+01020:             "estimator_solver": str(first["estimator_solver"]),
+01021:             "estimator_rcond": float(first["estimator_rcond"]),
+01022:             "estimator_effective_rows_min": int(
+01023:                 block["estimator_effective_rows"].min()
+01024:             ),
+01025:             "estimator_effective_rows_max": int(
+01026:                 block["estimator_effective_rows"].max()
+01027:             ),
+01028:             "estimator_rank_min": int(
+01029:                 block["estimator_rank"].min()
+01030:             ),
+01031:             "estimator_condition_max": float(
+01032:                 pd.to_numeric(
+01033:                     block["estimator_condition"],
+01034:                     errors="coerce",
+01035:                 ).max()
+01036:             ),
+01037:             "estimator_singular_max_max": float(
+01038:                 pd.to_numeric(
+01039:                     block["estimator_singular_max"],
+01040:                     errors="coerce",
+01041:                 ).max()
+01042:             ),
+01043:             "estimator_singular_min_min": float(
+01044:                 pd.to_numeric(
+01045:                     block["estimator_singular_min"],
+01046:                     errors="coerce",
+01047:                 ).min()
+01048:             ),
+01049:             "estimator_residual_norm_max": float(
+01050:                 pd.to_numeric(
+01051:                     block["estimator_residual_norm"],
+01052:                     errors="coerce",
+01053:                 ).max()
+01054:             ),
+01055:             "state_update_accepted_fraction": float(
+01056:                 block["state_update_accepted_step"].mean()
+01057:             ),
+01058:             "bootstrap_accept_fraction": float(
+01059:                 block["bootstrap_accept_step"].mean()
+01060:             ),
+01061:             "solve_inexact_hold_fraction": float(
+01062:                 block["solve_inexact_hold_step"].mean()
+01063:             ),
+01064:             "nonfinite_candidate_hold_fraction": float(
+01065:                 block["nonfinite_candidate_hold_step"].mean()
+01066:             ),
+01067:             "jump_guard_hold_fraction": float(
+01068:                 block["jump_guard_hold_step"].mean()
+01069:             ),
+01070:             "pseudo_only_fraction": float(
+01071:                 block["pseudo_only_step"].mean()
+01072:             ),
+01073:             "external_support_present_fraction": float(
+01074:                 block["external_support_present_step"].mean()
+01075:             ),
+01076:             "no_received_measurements_fraction": float(
+01077:                 block["no_received_measurements_step"].mean()
+01078:             ),
+01079:             "candidate_norm_max": float(
+01080:                 pd.to_numeric(
+01081:                     block["candidate_norm"], errors="coerce"
+01082:                 ).max()
+01083:             ),
+01084:             "previous_norm_max": float(
+01085:                 pd.to_numeric(
+01086:                     block["previous_norm"], errors="coerce"
+01087:                 ).max()
+01088:             ),
+01089:             "jump_norm_max": float(
+01090:                 pd.to_numeric(
+01091:                     block["jump_norm"], errors="coerce"
+01092:                 ).max()
+01093:             ),
+01094:             "jump_limit_min": float(
+01095:                 pd.to_numeric(
+01096:                     block["jump_limit"], errors="coerce"
+01097:                 ).min()
+01098:             ),
+01099:             "jump_guard_policy": str(first["jump_guard_policy"]),
+01100:             "model_increment_scale": float(
+01101:                 first["model_increment_scale"]
+01102:             ),
+01103:             "external_received_count_min": int(
+01104:                 block["external_received_count"].min()
+01105:             ),
+01106:             "external_total": int(block["external_total"].iloc[0]),
+01107:             "external_support_fraction_min": float(
+01108:                 block["external_support_fraction"].min()
+01109:             ),
+01110:             "pseudo_received_count_max": int(
+01111:                 block["pseudo_received_count"].max()
+01112:             ),
+01113:             "residual_available": bool(block["residual_available"].any()),
+01114:             "steps": int(len(block)),
+01115:         }
+01116:         for column in MAX_EVENT_COLUMNS:
+01117:             values = pd.to_numeric(block[column], errors="coerce").to_numpy(float)
+01118:             row[column] = float(np.nanmax(values)) if np.any(np.isfinite(values)) else float("nan")
+01119:         rows.append(row)
+01120:     return pd.DataFrame(rows)
+
+===== TWIN_FUNCTION.publish_score LINES 1245-1329 =====
+01245: def publish_score(
+01246:     helics: Any,
+01247:     endpoint: Any,
+01248:     destination: str,
+01249:     row: dict[str, Any],
+01250:     x_hat: np.ndarray,
+01251:     *,
+01252:     publish_state: bool,
+01253: ) -> None:
+01254:     if not destination:
+01255:         return
+01256:     payload: dict[str, Any] = {
+01257:         "schema": SCORE_SCHEMA,
+01258:         "time": row["time"],
+01259:         "step_index": row["step_index"],
+01260:         "event_id": row["event_id"],
+01261:         "pattern_id": row["pattern_id"],
+01262:         "arm": row["arm"],
+01263:         "regime": row["regime"],
+01264:         "stratum": row["stratum"],
+01265:         "bandwidth_level": row["bandwidth_level"],
+01266:         "bandwidth_cap_bps": row["bandwidth_cap_bps"],
+01267:         "T": row["T"],
+01268:         "s": row["s"],
+01269:         "s_lmax": row["s_lmax"],
+01270:         "s_trace": row["s_trace"],
+01271:         "r": row["r"],
+01272:         "chi2": row["chi2"],
+01273:         "huber": row["huber"],
+01274:         "lnr": row["lnr"],
+01275:         "u_lmax": row["u_lmax"],
+01276:         "u_trace": row["u_trace"],
+01277:         "u_lmax_mean": row["u_lmax_mean"],
+01278:         "u_trace_mean": row["u_trace_mean"],
+01279:         "u_lmax_delta": row["u_lmax_delta"],
+01280:         "u_trace_delta": row["u_trace_delta"],
+01281:         "s_delta_lmax": row["s_delta_lmax"],
+01282:         "s_delta_trace": row["s_delta_trace"],
+01283:         "T_delta_lmax": row["T_delta_lmax"],
+01284:         "alarm_delta_lmax": row["alarm_delta_lmax"],
+01285:         "sB1": row["sB1"],
+01286:         "sB2": row["sB2"],
+01287:         "s_gated_lmax": row["s_gated_lmax"],
+01288:         "s_gated_trace": row["s_gated_trace"],
+01289:         "b1": row["b1"],
+01290:         "b2": row["b2"],
+01291:         "n_rx": row["n_rx"],
+01292:         "n_rx_telemetry": row["n_rx_telemetry"],
+01293:         "held": row["held"],
+01294:         "solve_exact": row["solve_exact"],
+01295:         "estimator_reliable": row["estimator_reliable"],
+01296:         "estimator_solver": row["estimator_solver"],
+01297:         "estimator_rcond": row["estimator_rcond"],
+01298:         "estimator_effective_rows": row["estimator_effective_rows"],
+01299:         "estimator_rank": row["estimator_rank"],
+01300:         "estimator_condition": row["estimator_condition"],
+01301:         "estimator_singular_max": row["estimator_singular_max"],
+01302:         "estimator_singular_min": row["estimator_singular_min"],
+01303:         "estimator_residual_norm": row["estimator_residual_norm"],
+01304:         "hold_reason": row["hold_reason"],
+01305:         "state_update_accepted_step": row["state_update_accepted_step"],
+01306:         "bootstrap_accept_step": row["bootstrap_accept_step"],
+01307:         "solve_inexact_hold_step": row["solve_inexact_hold_step"],
+01308:         "nonfinite_candidate_hold_step": row["nonfinite_candidate_hold_step"],
+01309:         "jump_guard_hold_step": row["jump_guard_hold_step"],
+01310:         "candidate_norm": row["candidate_norm"],
+01311:         "previous_norm": row["previous_norm"],
+01312:         "jump_norm": row["jump_norm"],
+01313:         "jump_limit": row["jump_limit"],
+01314:         "jump_guard_policy": row["jump_guard_policy"],
+01315:         "model_increment_scale": row["model_increment_scale"],
+01316:         "external_received_count": row["external_received_count"],
+01317:         "external_total": row["external_total"],
+01318:         "external_support_fraction": row["external_support_fraction"],
+01319:         "pseudo_received_count": row["pseudo_received_count"],
+01320:         "pseudo_only_step": row["pseudo_only_step"],
+01321:         "external_support_present_step": row["external_support_present_step"],
+01322:         "no_received_measurements_step": row["no_received_measurements_step"],
+01323:         "floor_kind": row["floor_kind"],
+01324:         "loss_quantile": row["loss_quantile"],
+01325:     }
+01326:     if publish_state:
+01327:         payload["x_hat"] = x_hat.tolist()
+01328:     encoded = json.dumps(json_safe(payload), separators=(",", ":"))
+01329:     send_text(helics, endpoint, encoded, destination)
+
+===== TWIN_FUNCTION.check_args LINES 1503-1531 =====
+01503: def check_args(args: argparse.Namespace) -> None:
+01504:     if (
+01505:         args.dt <= 0.0
+01506:         or args.helics_time_delta <= 0.0
+01507:         or args.steps_per_event < 1
+01508:         or not args.upstream_federate
+01509:     ):
+01510:         raise ValueError(
+01511:             "--dt, --helics-time-delta, and --steps-per-event must be positive"
+01512:         )
+01513:     if args.tail_time < 0.0 or args.b_min < 0.0:
+01514:         raise ValueError("--tail-time and --b-min must be nonnegative")
+01515:     if not math.isfinite(args.bandwidth_cap_bps) or args.bandwidth_cap_bps <= 0.0:
+01516:         raise ValueError("--bandwidth-cap-bps must be finite and positive")
+01517:     if not args.bandwidth_level or any(
+01518:         character not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.-"
+01519:         for character in args.bandwidth_level
+01520:     ):
+01521:         raise ValueError("--bandwidth-level contains an invalid character")
+01522:     if args.future_time_tolerance < 0.0:
+01523:         raise ValueError("--future-time-tolerance must be nonnegative")
+01524:     if args.T_th is not None and not 0.0 < args.T_th < 1.0:
+01525:         raise ValueError("--T-th must lie in (0,1)")
+01526:     if not 0.0 < args.delta < 1.0:
+01527:         raise ValueError("--delta must lie in (0,1)")
+01528:     if args.hold_factor <= 1.0:
+01529:         raise ValueError("--hold-factor must exceed 1")
+01530:     if args.checkpoint_every_events < 0:
+01531:         raise ValueError("--checkpoint-every-events must be nonnegative")
+
+===== TRUST_RELEVANT_OCCURRENCES =====
+-----
+00060: 
+00061:     n_telemetry: Optional[int] = None  # first n_tel channels are starvable;
+00062:                                        # the rest are pseudo (Delta=0, g=1)
+00063:     ridge: float = 0.0                 # optional estimator ridge if rank-deficient
+00064: 
+00065:     def u0(self) -> float:
+-----
+00098:         self.u_max_trace = cfg.omega**2 * (self.n / (cfg.eps * self.T0) - 1.0)
+00099: 
+00100:         # achievable maxima with pseudo-measurements always present
+00101:         if cfg.n_telemetry:
+00102:             w = np.ones(self.m); w[:cfg.n_telemetry] = 0.0
+-----
+00196:         weights = raw_weights[valid]
+00197: 
+00198:         rcond = float(np.sqrt(np.finfo(float).eps))
+00199:         ridge = float(self.cfg.ridge)
+00200: 
+00201:         if not np.isfinite(ridge) or ridge < 0.0:
+00202:             raise ValueError(
+00203:                 "estimator ridge must be finite and nonnegative"
+00204:             )
+00205: 
+00206:         self.last_estimator_solver = "weighted_lstsq_svd"
+00207:         self.last_estimator_rcond = rcond
+00208:         self.last_estimator_effective_rows = int(len(idx))
+00209:         self.last_estimator_rank = 0
+-----
+00232:             return np.full(self.n, np.nan), False
+00233: 
+00234:         if ridge > 0.0:
+00235:             weighted_h = np.vstack(
+00236:                 [
+00237:                     weighted_h,
+00238:                     np.eye(self.n) * np.sqrt(ridge),
+00239:                 ]
+00240:             )
+-----
+00252:                 rank,
+00253:                 singular_values,
+00254:             ) = np.linalg.lstsq(
+00255:                 weighted_h,
+00256:                 weighted_z,
+00257:                 rcond=rcond,
+00258:             )
+00259:         except np.linalg.LinAlgError:
+-----
+00308:             rank == self.n
+00309:             and np.isfinite(condition)
+00310:             and condition <= 1.0 / rcond
+00311:         )
+00312: 
+-----
+00404:                           f"form only as a conservative check.")
+00405:             if self.u_ach_lmax < 0.5 * self.u_max_lmax:
+00406:                 print("    note: pseudo-measurements keep G away from 0, so the ACHIEVABLE"
+00407:                       "\n          exposure is below the theoretical ceiling. Calibrate u0"
+00408:                       "\n          against achievable values, not against the ceiling.")
+
+===== TWIN_RELEVANT_OCCURRENCES =====
+-----
+00005: states, communication outcomes, or oracle labels.  It receives timestamped
+00006: telemetry after ns-3/HELICS impairment, maintains the last valid sample for
+00007: each telemetry channel, constructs local pseudo-measurements from the previous
+00008: twin state, runs the common age-aware estimator, evaluates all detector scores
+00009: from that same estimate, and publishes the estimate/scores to the oracle.
+-----
+00528:         bandwidth_cap_bps: float,
+00529:         bandwidth_level: str,
+00530:         hold_factor: float,
+00531:         lnr_enabled: bool,
+00532:         initial_state: np.ndarray,
+-----
+00546:         self.bandwidth_cap_bps = bandwidth_cap_bps
+00547:         self.bandwidth_level = bandwidth_level
+00548:         self.hold_factor = hold_factor
+00549:         self.lnr_enabled = lnr_enabled
+00550:         self.m, self.n = H.shape
+00551:         self.x_previous = np.asarray(initial_state, dtype=float).copy()
+00552:         self.samples: list[TelemetrySample | None] = [None] * n_telemetry
+00553:         self.received_messages = 0
+00554:         self.accepted_messages = 0
+-----
+00559:     def accept_sample(self, sample: TelemetrySample) -> bool:
+00560:         self.received_messages += 1
+00561:         previous = self.samples[sample.channel_id]
+00562:         if previous is not None:
+00563:             old_key = (previous.source_time, previous.sequence)
+-----
+00566:                 self.stale_messages += 1
+00567:                 return False
+00568:         self.samples[sample.channel_id] = sample
+00569:         self.accepted_messages += 1
+00570:         self.new_since_update += 1
+-----
+00592:         rx = np.zeros(self.m, dtype=bool)
+00593: 
+00594:         for channel, sample in enumerate(self.samples):
+00595:             if sample is None:
+00596:                 age[channel] = logical_time
+-----
+00600:             rx[channel] = bool(feasible[channel])
+00601: 
+00602:         # Local pseudo-measurements are generated from the prior twin state.
+00603:         # They are fresh, never traverse the network, and use their feeder
+00604:         # variances in the common estimator.
+-----
+00626:         )
+00627: 
+00628:         previous_norm = float(np.linalg.norm(self.x_previous))
+00629: 
+00630:         omega = float(self.metric.cfg.omega)
+-----
+00634:             )
+00635: 
+00636:         model_increment_scale = max(
+00637:             math.sqrt(self.n) * omega,
+00638:             1e-12,
+00639:         )
+00640:         jump_limit = float(
+00641:             self.hold_factor * model_increment_scale
+00642:         )
+00643: 
+00644:         if candidate_finite:
+00645:             candidate_norm = float(np.linalg.norm(candidate_array))
+00646:         else:
+00647:             candidate_norm = float("nan")
+00648: 
+00649:         if had_valid_estimate and candidate_finite:
+-----
+00662:             np.count_nonzero(rx_array[:external_total])
+00663:         )
+00664:         pseudo_received = int(
+00665:             np.count_nonzero(rx_array[external_total:])
+00666:         )
+-----
+00668:         if external_received > 0:
+00669:             external_support_state = "external_present"
+00670:         elif pseudo_received > 0:
+00671:             external_support_state = "pseudo_only"
+00672:         else:
+00673:             external_support_state = "no_received_measurements"
+-----
+00682:             decision_reason = "bootstrap_accept"
+00683:             held = False
+00684:         elif jump_norm > jump_limit:
+00685:             decision_reason = "jump_guard"
+00686:             held = True
+-----
+00690: 
+00691:         self.last_hold_reason = decision_reason
+00692:         self.last_candidate_norm = candidate_norm
+00693:         self.last_previous_norm = previous_norm
+00694:         self.last_jump_norm = jump_norm
+00695:         self.last_jump_limit = jump_limit
+00696:         self.last_jump_guard_policy = "fixed_model_increment"
+00697:         self.last_model_increment_scale = model_increment_scale
+00698:         self.last_candidate_finite = candidate_finite
+00699:         self.last_solved_exactly = bool(solved_exactly)
+00700:         self.last_estimator_reliable = bool(solved_exactly)
+00701:         self.last_estimator_solver = str(
+00702:             getattr(
+-----
+00706:             )
+00707:         )
+00708:         self.last_estimator_rcond = float(
+00709:             getattr(
+00710:                 self.metric,
+00711:                 "last_estimator_rcond",
+00712:                 float("nan"),
+00713:             )
+-----
+00757:         self.last_external_received_count = external_received
+00758:         self.last_external_total = external_total
+00759:         self.last_pseudo_received_count = pseudo_received
+00760:         self.last_external_support_state = external_support_state
+00761:         self.last_pseudo_only = external_support_state == "pseudo_only"
+00762:         self.last_external_support_fraction = (
+00763:             float(external_received / external_total)
+-----
+00910:             "n_rx": int(rx.sum()),
+00911:             "n_rx_telemetry": int(rx[: self.n_telemetry].sum()),
+00912:             "cached_telemetry": int(sum(sample is not None for sample in self.samples)),
+00913:             "new_telemetry": int(self.new_since_update),
+00914:             "held": bool(held),
+00915:             "solve_exact": bool(solved_exactly),
+00916:             "estimator_reliable": self.last_estimator_reliable,
+00917:             "estimator_solver": self.last_estimator_solver,
+00918:             "estimator_rcond": self.last_estimator_rcond,
+00919:             "estimator_effective_rows": self.last_estimator_effective_rows,
+00920:             "estimator_rank": self.last_estimator_rank,
+-----
+00929:             "nonfinite_candidate_hold_step": self.last_hold_reason == "nonfinite_candidate",
+00930:             "jump_guard_hold_step": self.last_hold_reason == "jump_guard",
+00931:             "candidate_norm": self.last_candidate_norm,
+00932:             "previous_norm": self.last_previous_norm,
+00933:             "jump_norm": self.last_jump_norm,
+00934:             "jump_limit": self.last_jump_limit,
+00935:             "jump_guard_policy": self.last_jump_guard_policy,
+00936:             "model_increment_scale": self.last_model_increment_scale,
+00937:             "external_received_count": self.last_external_received_count,
+00938:             "external_total": self.last_external_total,
+00939:             "external_support_fraction": self.last_external_support_fraction,
+00940:             "pseudo_received_count": self.last_pseudo_received_count,
+00941:             "pseudo_only_step": self.last_pseudo_only,
+00942:             "external_support_present_step": self.last_external_received_count > 0,
+00943:             "no_received_measurements_step": (
+00944:                 self.last_external_received_count == 0
+00945:                 and self.last_pseudo_received_count == 0
+00946:             ),
+00947:             "residual_available": bool(np.any(rx & (gamma > 0.0))),
+-----
+01012:             "solve_exact_fraction": float(block["solve_exact"].mean()),
+01013:             "solve_exact_all": bool(block["solve_exact"].all()),
+01014:             "estimator_reliable_fraction": float(
+01015:                 block["estimator_reliable"].mean()
+01016:             ),
+01017:             "estimator_reliable_all": bool(
+01018:                 block["estimator_reliable"].all()
+01019:             ),
+01020:             "estimator_solver": str(first["estimator_solver"]),
+01021:             "estimator_rcond": float(first["estimator_rcond"]),
+01022:             "estimator_effective_rows_min": int(
+01023:                 block["estimator_effective_rows"].min()
+-----
+01068:                 block["jump_guard_hold_step"].mean()
+01069:             ),
+01070:             "pseudo_only_fraction": float(
+01071:                 block["pseudo_only_step"].mean()
+01072:             ),
+01073:             "external_support_present_fraction": float(
+-----
+01077:                 block["no_received_measurements_step"].mean()
+01078:             ),
+01079:             "candidate_norm_max": float(
+01080:                 pd.to_numeric(
+01081:                     block["candidate_norm"], errors="coerce"
+01082:                 ).max()
+01083:             ),
+01084:             "previous_norm_max": float(
+01085:                 pd.to_numeric(
+01086:                     block["previous_norm"], errors="coerce"
+01087:                 ).max()
+01088:             ),
+-----
+01092:                 ).max()
+01093:             ),
+01094:             "jump_limit_min": float(
+01095:                 pd.to_numeric(
+01096:                     block["jump_limit"], errors="coerce"
+01097:                 ).min()
+01098:             ),
+01099:             "jump_guard_policy": str(first["jump_guard_policy"]),
+01100:             "model_increment_scale": float(
+01101:                 first["model_increment_scale"]
+01102:             ),
+01103:             "external_received_count_min": int(
+-----
+01108:                 block["external_support_fraction"].min()
+01109:             ),
+01110:             "pseudo_received_count_max": int(
+01111:                 block["pseudo_received_count"].max()
+01112:             ),
+01113:             "residual_available": bool(block["residual_available"].any()),
+-----
+01293:         "held": row["held"],
+01294:         "solve_exact": row["solve_exact"],
+01295:         "estimator_reliable": row["estimator_reliable"],
+01296:         "estimator_solver": row["estimator_solver"],
+01297:         "estimator_rcond": row["estimator_rcond"],
+01298:         "estimator_effective_rows": row["estimator_effective_rows"],
+01299:         "estimator_rank": row["estimator_rank"],
+-----
+01308:         "nonfinite_candidate_hold_step": row["nonfinite_candidate_hold_step"],
+01309:         "jump_guard_hold_step": row["jump_guard_hold_step"],
+01310:         "candidate_norm": row["candidate_norm"],
+01311:         "previous_norm": row["previous_norm"],
+01312:         "jump_norm": row["jump_norm"],
+01313:         "jump_limit": row["jump_limit"],
+01314:         "jump_guard_policy": row["jump_guard_policy"],
+01315:         "model_increment_scale": row["model_increment_scale"],
+01316:         "external_received_count": row["external_received_count"],
+01317:         "external_total": row["external_total"],
+01318:         "external_support_fraction": row["external_support_fraction"],
+01319:         "pseudo_received_count": row["pseudo_received_count"],
+01320:         "pseudo_only_step": row["pseudo_only_step"],
+01321:         "external_support_present_step": row["external_support_present_step"],
+01322:         "no_received_measurements_step": row["no_received_measurements_step"],
+-----
+01526:     if not 0.0 < args.delta < 1.0:
+01527:         raise ValueError("--delta must lie in (0,1)")
+01528:     if args.hold_factor <= 1.0:
+01529:         raise ValueError("--hold-factor must exceed 1")
+01530:     if args.checkpoint_every_events < 0:
+-----
+01708:         bandwidth_cap_bps=args.bandwidth_cap_bps,
+01709:         bandwidth_level=args.bandwidth_level,
+01710:         hold_factor=args.hold_factor,
+01711:         lnr_enabled=args.lnr,
+01712:         initial_state=initial_state,
+
+===== RUN_FILE_INVENTORY =====
+{"bytes": 2827, "path": "CELL_OUTPUT_SHA256SUMS.csv", "sha256": "3194e08db5bd2f453a10d1a02e81028f02fdf4a38eabc6c3b9bb80bdb74cd123"}
+{"bytes": 1405, "path": "cell_record.paper1.v5_1.mechanical.json", "sha256": "2cd9a928e3e2d470261b5d9fb6eb8735c5b02ae2228fdf5ca4b7e7bf1c562d19"}
+{"bytes": 631, "path": "net/meta.json", "sha256": "9f067d04b9683fc11058ed30c5a0ffb044b0d007af87fa238bbfb9a40d7a980e"}
+{"bytes": 2111, "path": "oracle/meta.json", "sha256": "6aaeb5fabed5e95512ed0d1aaa9ca1a06847e2735d5f4ca149c1a102726659c9"}
+{"bytes": 214628, "path": "oracle/oracle_events.parquet", "sha256": "18efb451d651cb82266f4abdb6f27969907f934cd19d2e9d4f563264f3764ee3"}
+{"bytes": 2946782, "path": "oracle/oracle_scores.parquet", "sha256": "8fa003493d9f460dcc92025a15b60529acc6bd38453068b51b9bec8241c7fcbc"}
+{"bytes": 1745, "path": "power/meta.json", "sha256": "5a758fdf9f42fbb59e0f4aa1f0d258b84b217e7e1bc889280bdb0e355d4b2117"}
+{"bytes": 4935, "path": "twin/meta.json", "sha256": "0c71b9b28198dc552f62f65fc5aeb7dd346d338dcee8c5adb3d9b18efe336f40"}
+{"bytes": 2955162, "path": "twin/scores.parquet", "sha256": "a2c8c17071792d848a564ea52ac7f6add8dc33be183231115f2387cd525132d5"}
+{"bytes": 2955162, "path": "twin/scores.partial.parquet", "sha256": "a2c8c17071792d848a564ea52ac7f6add8dc33be183231115f2387cd525132d5"}
+{"bytes": 295805, "path": "twin/scores_events.parquet", "sha256": "b4275e3a1d4488c0fa74b916c86efa7f7597abe92f709bbadad8b05d384ddd25"}
+{"bytes": 295805, "path": "twin/scores_events.partial.parquet", "sha256": "b4275e3a1d4488c0fa74b916c86efa7f7597abe92f709bbadad8b05d384ddd25"}
+
+===== PARQUET_SCHEMA =====
+{"columns": [{"name": "trajectory_id", "type": "string"}, {"name": "event_id", "type": "int64"}, {"name": "stratum", "type": "int64"}, {"name": "drift_family", "type": "string"}, {"name": "pattern_id", "type": "int64"}, {"name": "arm", "type": "string"}, {"name": "regime", "type": "string"}, {"name": "label", "type": "bool"}, {"name": "d", "type": "double"}, {"name": "steps", "type": "int64"}, {"name": "is_nominal", "type": "bool"}, {"name": "nominal_fraction", "type": "double"}, {"name": "s_gated_lmax", "type": "double"}, {"name": "huber", "type": "double"}, {"name": "u_lmax_mean", "type": "double"}, {"name": "b2", "type": "double"}, {"name": "sB1", "type": "double"}, {"name": "lnr", "type": "double"}, {"name": "u_trace", "type": "double"}, {"name": "s_gated_trace", "type": "double"}, {"name": "x_error_norm", "type": "double"}, {"name": "sB2", "type": "double"}, {"name": "u_lmax", "type": "double"}, {"name": "u_trace_mean", "type": "double"}, {"name": "s_lmax", "type": "double"}, {"name": "s", "type": "double"}, {"name": "chi2", "type": "double"}, {"name": "s_trace", "type": "double"}, {"name": "loss_quantile", "type": "double"}, {"name": "r", "type": "double"}, {"name": "T", "type": "double"}, {"name": "b1", "type": "double"}, {"name": "n_rx", "type": "int64"}, {"name": "n_rx_telemetry", "type": "int64"}, {"name": "held", "type": "double"}, {"name": "held_any", "type": "bool"}, {"name": "solve_exact", "type": "bool"}, {"name": "solve_exact_fraction", "type": "double"}, {"name": "floor_kind", "type": "string"}], "path": "oracle/oracle_events.parquet", "row_groups": 1, "rows": 1100, "values_read": false}
+
+===== PARQUET_SCHEMA =====
+{"columns": [{"name": "time", "type": "double"}, {"name": "step_index", "type": "int64"}, {"name": "event_id", "type": "int64"}, {"name": "pattern_id", "type": "int64"}, {"name": "arm", "type": "string"}, {"name": "regime", "type": "string"}, {"name": "stratum", "type": "int64"}, {"name": "bandwidth_level", "type": "string"}, {"name": "bandwidth_cap_bps", "type": "double"}, {"name": "T", "type": "double"}, {"name": "s", "type": "double"}, {"name": "s_lmax", "type": "double"}, {"name": "s_trace", "type": "double"}, {"name": "r", "type": "double"}, {"name": "chi2", "type": "double"}, {"name": "huber", "type": "double"}, {"name": "lnr", "type": "null"}, {"name": "u_lmax", "type": "double"}, {"name": "u_trace", "type": "double"}, {"name": "u_lmax_mean", "type": "double"}, {"name": "u_trace_mean", "type": "double"}, {"name": "u_lmax_delta", "type": "double"}, {"name": "u_trace_delta", "type": "double"}, {"name": "s_delta_lmax", "type": "double"}, {"name": "s_delta_trace", "type": "double"}, {"name": "T_delta_lmax", "type": "double"}, {"name": "alarm_delta_lmax", "type": "bool"}, {"name": "sB1", "type": "double"}, {"name": "sB2", "type": "double"}, {"name": "s_gated_lmax", "type": "double"}, {"name": "s_gated_trace", "type": "double"}, {"name": "b1", "type": "double"}, {"name": "b2", "type": "double"}, {"name": "n_rx", "type": "int64"}, {"name": "n_rx_telemetry", "type": "int64"}, {"name": "held", "type": "bool"}, {"name": "solve_exact", "type": "bool"}, {"name": "estimator_reliable", "type": "bool"}, {"name": "estimator_solver", "type": "string"}, {"name": "estimator_rcond", "type": "double"}, {"name": "estimator_effective_rows", "type": "int64"}, {"name": "estimator_rank", "type": "int64"}, {"name": "estimator_condition", "type": "double"}, {"name": "estimator_singular_max", "type": "double"}, {"name": "estimator_singular_min", "type": "double"}, {"name": "estimator_residual_norm", "type": "double"}, {"name": "hold_reason", "type": "string"}, {"name": "state_update_accepted_step", "type": "bool"}, {"name": "bootstrap_accept_step", "type": "bool"}, {"name": "solve_inexact_hold_step", "type": "bool"}, {"name": "nonfinite_candidate_hold_step", "type": "bool"}, {"name": "jump_guard_hold_step", "type": "bool"}, {"name": "candidate_norm", "type": "double"}, {"name": "previous_norm", "type": "double"}, {"name": "jump_norm", "type": "double"}, {"name": "jump_limit", "type": "double"}, {"name": "jump_guard_policy", "type": "string"}, {"name": "model_increment_scale", "type": "double"}, {"name": "external_received_count", "type": "int64"}, {"name": "external_total", "type": "int64"}, {"name": "external_support_fraction", "type": "double"}, {"name": "pseudo_received_count", "type": "int64"}, {"name": "pseudo_only_step", "type": "bool"}, {"name": "external_support_present_step", "type": "bool"}, {"name": "no_received_measurements_step", "type": "bool"}, {"name": "floor_kind", "type": "string"}, {"name": "loss_quantile", "type": "int64"}, {"name": "d", "type": "double"}, {"name": "x_error_norm", "type": "double"}, {"name": "label", "type": "bool"}, {"name": "drift_family", "type": "string"}, {"name": "trajectory_id", "type": "string"}, {"name": "is_nominal", "type": "bool"}], "path": "oracle/oracle_scores.parquet", "row_groups": 1, "rows": 13200, "values_read": false}
+
+===== PARQUET_SCHEMA =====
+{"columns": [{"name": "time", "type": "double"}, {"name": "step_index", "type": "int64"}, {"name": "event_id", "type": "int64"}, {"name": "step_in_event", "type": "int64"}, {"name": "pattern_id", "type": "int64"}, {"name": "arm", "type": "string"}, {"name": "regime", "type": "string"}, {"name": "stratum", "type": "int64"}, {"name": "bandwidth_level", "type": "string"}, {"name": "bandwidth_cap_bps", "type": "double"}, {"name": "r", "type": "double"}, {"name": "chi2", "type": "double"}, {"name": "huber", "type": "double"}, {"name": "lnr", "type": "double"}, {"name": "u_lmax", "type": "double"}, {"name": "u_trace", "type": "double"}, {"name": "u_lmax_mean", "type": "double"}, {"name": "u_trace_mean", "type": "double"}, {"name": "u_lmax_delta", "type": "double"}, {"name": "u_trace_delta", "type": "double"}, {"name": "s_lmax", "type": "double"}, {"name": "s_trace", "type": "double"}, {"name": "s_delta_lmax", "type": "double"}, {"name": "s_delta_trace", "type": "double"}, {"name": "T_delta_lmax", "type": "double"}, {"name": "alarm_delta_lmax", "type": "bool"}, {"name": "s", "type": "double"}, {"name": "T", "type": "double"}, {"name": "alarm", "type": "bool"}, {"name": "sB1", "type": "double"}, {"name": "sB2", "type": "double"}, {"name": "s_gated_lmax", "type": "double"}, {"name": "s_gated_trace", "type": "double"}, {"name": "b1", "type": "double"}, {"name": "b2", "type": "double"}, {"name": "n_rx", "type": "int64"}, {"name": "n_rx_telemetry", "type": "int64"}, {"name": "cached_telemetry", "type": "int64"}, {"name": "new_telemetry", "type": "int64"}, {"name": "held", "type": "bool"}, {"name": "solve_exact", "type": "bool"}, {"name": "estimator_reliable", "type": "bool"}, {"name": "estimator_solver", "type": "string"}, {"name": "estimator_rcond", "type": "double"}, {"name": "estimator_effective_rows", "type": "int64"}, {"name": "estimator_rank", "type": "int64"}, {"name": "estimator_condition", "type": "double"}, {"name": "estimator_singular_max", "type": "double"}, {"name": "estimator_singular_min", "type": "double"}, {"name": "estimator_residual_norm", "type": "double"}, {"name": "hold_reason", "type": "string"}, {"name": "state_update_accepted_step", "type": "bool"}, {"name": "bootstrap_accept_step", "type": "bool"}, {"name": "solve_inexact_hold_step", "type": "bool"}, {"name": "nonfinite_candidate_hold_step", "type": "bool"}, {"name": "jump_guard_hold_step", "type": "bool"}, {"name": "candidate_norm", "type": "double"}, {"name": "previous_norm", "type": "double"}, {"name": "jump_norm", "type": "double"}, {"name": "jump_limit", "type": "double"}, {"name": "jump_guard_policy", "type": "string"}, {"name": "model_increment_scale", "type": "double"}, {"name": "external_received_count", "type": "int64"}, {"name": "external_total", "type": "int64"}, {"name": "external_support_fraction", "type": "double"}, {"name": "pseudo_received_count", "type": "int64"}, {"name": "pseudo_only_step", "type": "bool"}, {"name": "external_support_present_step", "type": "bool"}, {"name": "no_received_measurements_step", "type": "bool"}, {"name": "residual_available", "type": "bool"}, {"name": "mean_age_telemetry", "type": "double"}, {"name": "max_age_telemetry", "type": "double"}, {"name": "lam_min", "type": "double"}, {"name": "lam_min_mean", "type": "double"}, {"name": "lam_min_delta", "type": "double"}, {"name": "trace_inverse", "type": "double"}, {"name": "floor_kind", "type": "string"}, {"name": "floor_deflation", "type": "double"}, {"name": "loss_quantile", "type": "int64"}, {"name": "delta_floor_kind", "type": "string"}, {"name": "delta_floor_deflation", "type": "double"}, {"name": "delta_loss_quantile", "type": "int64"}], "path": "twin/scores.parquet", "row_groups": 1, "rows": 13200, "values_read": false}
+
+===== PARQUET_SCHEMA =====
+{"columns": [{"name": "time", "type": "double"}, {"name": "step_index", "type": "int64"}, {"name": "event_id", "type": "int64"}, {"name": "step_in_event", "type": "int64"}, {"name": "pattern_id", "type": "int64"}, {"name": "arm", "type": "string"}, {"name": "regime", "type": "string"}, {"name": "stratum", "type": "int64"}, {"name": "bandwidth_level", "type": "string"}, {"name": "bandwidth_cap_bps", "type": "double"}, {"name": "r", "type": "double"}, {"name": "chi2", "type": "double"}, {"name": "huber", "type": "double"}, {"name": "lnr", "type": "double"}, {"name": "u_lmax", "type": "double"}, {"name": "u_trace", "type": "double"}, {"name": "u_lmax_mean", "type": "double"}, {"name": "u_trace_mean", "type": "double"}, {"name": "u_lmax_delta", "type": "double"}, {"name": "u_trace_delta", "type": "double"}, {"name": "s_lmax", "type": "double"}, {"name": "s_trace", "type": "double"}, {"name": "s_delta_lmax", "type": "double"}, {"name": "s_delta_trace", "type": "double"}, {"name": "T_delta_lmax", "type": "double"}, {"name": "alarm_delta_lmax", "type": "bool"}, {"name": "s", "type": "double"}, {"name": "T", "type": "double"}, {"name": "alarm", "type": "bool"}, {"name": "sB1", "type": "double"}, {"name": "sB2", "type": "double"}, {"name": "s_gated_lmax", "type": "double"}, {"name": "s_gated_trace", "type": "double"}, {"name": "b1", "type": "double"}, {"name": "b2", "type": "double"}, {"name": "n_rx", "type": "int64"}, {"name": "n_rx_telemetry", "type": "int64"}, {"name": "cached_telemetry", "type": "int64"}, {"name": "new_telemetry", "type": "int64"}, {"name": "held", "type": "bool"}, {"name": "solve_exact", "type": "bool"}, {"name": "estimator_reliable", "type": "bool"}, {"name": "estimator_solver", "type": "string"}, {"name": "estimator_rcond", "type": "double"}, {"name": "estimator_effective_rows", "type": "int64"}, {"name": "estimator_rank", "type": "int64"}, {"name": "estimator_condition", "type": "double"}, {"name": "estimator_singular_max", "type": "double"}, {"name": "estimator_singular_min", "type": "double"}, {"name": "estimator_residual_norm", "type": "double"}, {"name": "hold_reason", "type": "string"}, {"name": "state_update_accepted_step", "type": "bool"}, {"name": "bootstrap_accept_step", "type": "bool"}, {"name": "solve_inexact_hold_step", "type": "bool"}, {"name": "nonfinite_candidate_hold_step", "type": "bool"}, {"name": "jump_guard_hold_step", "type": "bool"}, {"name": "candidate_norm", "type": "double"}, {"name": "previous_norm", "type": "double"}, {"name": "jump_norm", "type": "double"}, {"name": "jump_limit", "type": "double"}, {"name": "jump_guard_policy", "type": "string"}, {"name": "model_increment_scale", "type": "double"}, {"name": "external_received_count", "type": "int64"}, {"name": "external_total", "type": "int64"}, {"name": "external_support_fraction", "type": "double"}, {"name": "pseudo_received_count", "type": "int64"}, {"name": "pseudo_only_step", "type": "bool"}, {"name": "external_support_present_step", "type": "bool"}, {"name": "no_received_measurements_step", "type": "bool"}, {"name": "residual_available", "type": "bool"}, {"name": "mean_age_telemetry", "type": "double"}, {"name": "max_age_telemetry", "type": "double"}, {"name": "lam_min", "type": "double"}, {"name": "lam_min_mean", "type": "double"}, {"name": "lam_min_delta", "type": "double"}, {"name": "trace_inverse", "type": "double"}, {"name": "floor_kind", "type": "string"}, {"name": "floor_deflation", "type": "double"}, {"name": "loss_quantile", "type": "int64"}, {"name": "delta_floor_kind", "type": "string"}, {"name": "delta_floor_deflation", "type": "double"}, {"name": "delta_loss_quantile", "type": "int64"}], "path": "twin/scores.partial.parquet", "row_groups": 1, "rows": 13200, "values_read": false}
+
+===== PARQUET_SCHEMA =====
+{"columns": [{"name": "event_id", "type": "int64"}, {"name": "pattern_id", "type": "int64"}, {"name": "arm", "type": "string"}, {"name": "regime", "type": "string"}, {"name": "stratum", "type": "int64"}, {"name": "bandwidth_level", "type": "string"}, {"name": "bandwidth_cap_bps", "type": "double"}, {"name": "T", "type": "double"}, {"name": "alarm", "type": "bool"}, {"name": "alarm_delta_lmax", "type": "bool"}, {"name": "b1", "type": "double"}, {"name": "n_rx", "type": "int64"}, {"name": "n_rx_telemetry", "type": "int64"}, {"name": "held", "type": "double"}, {"name": "held_any", "type": "bool"}, {"name": "solve_exact_fraction", "type": "double"}, {"name": "solve_exact_all", "type": "bool"}, {"name": "estimator_reliable_fraction", "type": "double"}, {"name": "estimator_reliable_all", "type": "bool"}, {"name": "estimator_solver", "type": "string"}, {"name": "estimator_rcond", "type": "double"}, {"name": "estimator_effective_rows_min", "type": "int64"}, {"name": "estimator_effective_rows_max", "type": "int64"}, {"name": "estimator_rank_min", "type": "int64"}, {"name": "estimator_condition_max", "type": "double"}, {"name": "estimator_singular_max_max", "type": "double"}, {"name": "estimator_singular_min_min", "type": "double"}, {"name": "estimator_residual_norm_max", "type": "double"}, {"name": "state_update_accepted_fraction", "type": "double"}, {"name": "bootstrap_accept_fraction", "type": "double"}, {"name": "solve_inexact_hold_fraction", "type": "double"}, {"name": "nonfinite_candidate_hold_fraction", "type": "double"}, {"name": "jump_guard_hold_fraction", "type": "double"}, {"name": "pseudo_only_fraction", "type": "double"}, {"name": "external_support_present_fraction", "type": "double"}, {"name": "no_received_measurements_fraction", "type": "double"}, {"name": "candidate_norm_max", "type": "double"}, {"name": "previous_norm_max", "type": "double"}, {"name": "jump_norm_max", "type": "double"}, {"name": "jump_limit_min", "type": "double"}, {"name": "jump_guard_policy", "type": "string"}, {"name": "model_increment_scale", "type": "double"}, {"name": "external_received_count_min", "type": "int64"}, {"name": "external_total", "type": "int64"}, {"name": "external_support_fraction_min", "type": "double"}, {"name": "pseudo_received_count_max", "type": "int64"}, {"name": "residual_available", "type": "bool"}, {"name": "steps", "type": "int64"}, {"name": "s", "type": "double"}, {"name": "s_lmax", "type": "double"}, {"name": "s_trace", "type": "double"}, {"name": "r", "type": "double"}, {"name": "chi2", "type": "double"}, {"name": "huber", "type": "double"}, {"name": "lnr", "type": "double"}, {"name": "u_lmax", "type": "double"}, {"name": "u_trace", "type": "double"}, {"name": "u_lmax_mean", "type": "double"}, {"name": "u_trace_mean", "type": "double"}, {"name": "u_lmax_delta", "type": "double"}, {"name": "u_trace_delta", "type": "double"}, {"name": "sB1", "type": "double"}, {"name": "sB2", "type": "double"}, {"name": "s_gated_lmax", "type": "double"}, {"name": "s_gated_trace", "type": "double"}, {"name": "s_delta_lmax", "type": "double"}, {"name": "s_delta_trace", "type": "double"}, {"name": "T_delta_lmax", "type": "double"}, {"name": "b2", "type": "double"}, {"name": "mean_age_telemetry", "type": "double"}, {"name": "max_age_telemetry", "type": "double"}], "path": "twin/scores_events.parquet", "row_groups": 1, "rows": 1100, "values_read": false}
+
+===== PARQUET_SCHEMA =====
+{"columns": [{"name": "event_id", "type": "int64"}, {"name": "pattern_id", "type": "int64"}, {"name": "arm", "type": "string"}, {"name": "regime", "type": "string"}, {"name": "stratum", "type": "int64"}, {"name": "bandwidth_level", "type": "string"}, {"name": "bandwidth_cap_bps", "type": "double"}, {"name": "T", "type": "double"}, {"name": "alarm", "type": "bool"}, {"name": "alarm_delta_lmax", "type": "bool"}, {"name": "b1", "type": "double"}, {"name": "n_rx", "type": "int64"}, {"name": "n_rx_telemetry", "type": "int64"}, {"name": "held", "type": "double"}, {"name": "held_any", "type": "bool"}, {"name": "solve_exact_fraction", "type": "double"}, {"name": "solve_exact_all", "type": "bool"}, {"name": "estimator_reliable_fraction", "type": "double"}, {"name": "estimator_reliable_all", "type": "bool"}, {"name": "estimator_solver", "type": "string"}, {"name": "estimator_rcond", "type": "double"}, {"name": "estimator_effective_rows_min", "type": "int64"}, {"name": "estimator_effective_rows_max", "type": "int64"}, {"name": "estimator_rank_min", "type": "int64"}, {"name": "estimator_condition_max", "type": "double"}, {"name": "estimator_singular_max_max", "type": "double"}, {"name": "estimator_singular_min_min", "type": "double"}, {"name": "estimator_residual_norm_max", "type": "double"}, {"name": "state_update_accepted_fraction", "type": "double"}, {"name": "bootstrap_accept_fraction", "type": "double"}, {"name": "solve_inexact_hold_fraction", "type": "double"}, {"name": "nonfinite_candidate_hold_fraction", "type": "double"}, {"name": "jump_guard_hold_fraction", "type": "double"}, {"name": "pseudo_only_fraction", "type": "double"}, {"name": "external_support_present_fraction", "type": "double"}, {"name": "no_received_measurements_fraction", "type": "double"}, {"name": "candidate_norm_max", "type": "double"}, {"name": "previous_norm_max", "type": "double"}, {"name": "jump_norm_max", "type": "double"}, {"name": "jump_limit_min", "type": "double"}, {"name": "jump_guard_policy", "type": "string"}, {"name": "model_increment_scale", "type": "double"}, {"name": "external_received_count_min", "type": "int64"}, {"name": "external_total", "type": "int64"}, {"name": "external_support_fraction_min", "type": "double"}, {"name": "pseudo_received_count_max", "type": "int64"}, {"name": "residual_available", "type": "bool"}, {"name": "steps", "type": "int64"}, {"name": "s", "type": "double"}, {"name": "s_lmax", "type": "double"}, {"name": "s_trace", "type": "double"}, {"name": "r", "type": "double"}, {"name": "chi2", "type": "double"}, {"name": "huber", "type": "double"}, {"name": "lnr", "type": "double"}, {"name": "u_lmax", "type": "double"}, {"name": "u_trace", "type": "double"}, {"name": "u_lmax_mean", "type": "double"}, {"name": "u_trace_mean", "type": "double"}, {"name": "u_lmax_delta", "type": "double"}, {"name": "u_trace_delta", "type": "double"}, {"name": "sB1", "type": "double"}, {"name": "sB2", "type": "double"}, {"name": "s_gated_lmax", "type": "double"}, {"name": "s_gated_trace", "type": "double"}, {"name": "s_delta_lmax", "type": "double"}, {"name": "s_delta_trace", "type": "double"}, {"name": "T_delta_lmax", "type": "double"}, {"name": "b2", "type": "double"}, {"name": "mean_age_telemetry", "type": "double"}, {"name": "max_age_telemetry", "type": "double"}], "path": "twin/scores_events.partial.parquet", "row_groups": 1, "rows": 1100, "values_read": false}
+
+===== META net/meta.json =====
+{"b_min":1,"bandwidth_cap_bps":1000000000000,"bandwidth_level":"bw04_oracle","counts":{"bytes_delivered":66437951,"bytes_received":85499064,"delivered":461426,"dropped_queue":0,"dropped_random":38278,"dropped_starved":94296,"malformed":0,"received":594000},"events":1100,"helics_time_delta":1e-06,"pattern_channels":583,"run":1,"schema":"net.run.meta.v1","seed":22002,"stage_offset":1e-06,"status":"complete","stop_time":13200,"tail_time":30,"telemetry_channels":45,"time_step":1}
+
+===== META oracle/meta.json =====
+{"completed_utc":"2026-09-02T14:40:15Z","created_utc":"2026-09-02T12:01:17Z","event_aggregation":{"T":"min","b1_n_rx":"min","held":"mean_with_any_flag","high_is_bad":"max","schema":"oracle.event-aggregation.v2","solve_exact":"all_with_fraction"},"git_sha":null,"host":"7a8a14ed5cb5","inputs":{"feeder":{"path":"/workspace/feeder.npz","sha256":"9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d"},"truth":{"path":"/workspace/truth.eval.paper1.v4.seed002.npz","sha256":"4ca98c30acb03981f8f4d35166748d0eaf7810af9d32258ec9b6469c8882b51a"}},"label_definition":{"formula":"sqrt((x_true-x_hat)^T W (x_true-x_hat)) > gamma","gamma":30.894480493264037,"uses_detector_or_baseline":false,"weight_source":"truth.npz:W"},"packages":{"helics":"3.6.1","numpy":"2.1.3","pandas":"2.2.3","pyarrow":"18.1.0"},"platform":"Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35","python":"3.11.11 (main, Aug 27 2026, 18:22:12) [GCC 11.4.0]","resolved_arguments":{"broker":"tcp://broker:23404","core_init":"--federates=1 --broker_address=tcp://broker:23404","core_type":"zmq","dt":1.0,"federate_name":"oracle_fed","feeder":"/workspace/feeder.npz","gamma":30.894480493264037,"helics_time_delta":1e-06,"input_endpoint":"oracle_fed/in","out_dir":"/workspace/runs/paper1_v5_1mv_s002_bw04_oracle/oracle","score_lag_steps":0,"steps_per_event":12,"stop_time":0.0,"strict_protocol":true,"truth":"/workspace/truth.eval.paper1.v4.seed002.npz","upstream_federate":"twin_fed","validate_only":false,"weight":null},"runtime_counts":{"duplicates":0,"events":1100,"malformed":0,"scores":13200},"schema":"oracle.run.meta.v1","status":"complete","timing":{"helics_time_delta":1e-06,"logical_dt":1.0,"stage_offset":3e-06},"wall_seconds":9536.387629508972}
+
+===== META power/meta.json =====
+{"completed_utc":"2026-09-02T14:40:02Z","created_utc":"2026-09-02T12:01:13Z","dimensions":{"states":491,"steps":13200,"telemetry":45},"git_sha":null,"host":"c6f9577ad686","inputs":{"feeder":{"path":"/workspace/feeder.npz","sha256":"9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d"},"truth":{"path":"/workspace/truth.eval.paper1.v4.seed002.npz","sha256":"4ca98c30acb03981f8f4d35166748d0eaf7810af9d32258ec9b6469c8882b51a"}},"packages":{"helics":"3.6.1","numpy":"2.1.3"},"platform":"Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35","python":"3.11.11 (main, Aug 27 2026, 18:22:12) [GCC 11.4.0]","resolved_arguments":{"allow_linearized_telemetry":false,"broker":"tcp://broker:23404","core_init":"--federates=1 --broker_address=tcp://broker:23404","core_type":"zmq","destination":"net_fed/in","dt":1.0,"federate_name":"power_fed","feeder":"/workspace/feeder.npz","helics_time_delta":1e-06,"measurement_noise":true,"out_dir":"/workspace/runs/paper1_v5_1mv_s002_bw04_oracle/power","output_endpoint":"power_fed/out","seed":12002,"steps_per_event":12,"stop_time":0.0,"truth":"/workspace/truth.eval.paper1.v4.seed002.npz","validate_only":false},"runtime_counts":{"bytes_sent":87149064,"packets_sent":594000},"schema":"power.run.meta.v1","seed_stream":{"independent_from_network_seed":true,"role":"physical_measurement_noise","seed":12002},"status":"complete","telemetry_source":"truth.z_true","wall_seconds":9527.47325515747}
+
+===== META twin/meta.json =====
+{"calibration_file_content":{"created_utc":"2026-08-30T17:58:42Z","hybrid_calibration":{"auc_sB1":0.5874199349376654,"auc_sB2":0.5721040189125296,"beta1":0.01973554287445086,"beta2":8.561699233270798e-07,"objective":"maximize calibration event AUC from exact step maxima"},"normalizers":{"r0":16124.353830165805,"u0_lmax":4.641211459353103e-06,"u0_trace":1.4269342674497839e-05},"schema":"twin.calibration.v2","selection":{"all_events":1100,"all_steps":13200,"ample_regime":"ample","moderate_events":117,"moderate_regime":"moderate","negative_events":1053,"nominal_ample_events":117,"positive_events":47},"sources":[{"path":"/workspace/runs/calibration_v2_final_001/oracle/oracle_scores.parquet","sha256":"546376204bc95998f3715a1af2c19eaadb4caa1be9960ba642def383b45d843b"}],"targets":{"moderate_target_trust":0.7,"nominal_trust":0.9,"normalizer_quantile":0.5},"threshold":{"T_th":1.0322936125408775e-30,"calibration_population":"nominal_ample_events","event_score_construction":"max_step(r/r0 + u/u0)","realized_calibration_far":0.008547008547008548,"realized_nominal_ample_far":0.008547008547008548,"scalarization":"lmax","score_threshold":69.04576965495076,"target_far":0.01}},"completed_utc":"2026-09-02T14:40:14Z","created_utc":"2026-09-02T12:01:29Z","dimensions":{"measurements":583,"patterns":1100,"states":491,"telemetry":45},"factor_design":{"bandwidth_cap_bps":1000000000000.0,"bandwidth_level":"bw04_oracle","schema":"twin.factor.cell.v3","transform":"B_effective = minimum(B_pattern, bandwidth_cap_bps)"},"git_sha":null,"host":"ea00c43a3e4d","inputs":{"calibration":{"path":"/workspace/calibration.v2.json","sha256":"175e513958464158232a4bf9c1014d0059710f2e38b0531ca9db7519ae1f0f78"},"feeder":{"path":"/workspace/feeder.npz","sha256":"9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d"},"patterns":{"path":"/workspace/patterns.npz","sha256":"52b7046e902d3594158e36766cadc4ea12b7d859f5c91edb025e3d2286f582d8"},"scenarios":{"path":"/workspace/scenarios.csv","sha256":"1abe9ac513e3d9e3e218eb3da2bfa8581598ead64a7713c8b98d4c27e4f6401d"}},"packages":{"helics":"3.6.1","numpy":"2.1.3","pandas":"2.2.3","pyarrow":"18.1.0","scipy":"1.14.1"},"platform":"Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35","python":"3.11.11 (main, Aug 27 2026, 18:22:12) [GCC 11.4.0]","resolved_arguments":{"T_th":1.0322936125408775e-30,"allow_uncalibrated":false,"b_min":1.0,"bandwidth_cap_bps":1000000000000.0,"bandwidth_level":"bw04_oracle","beta1":null,"beta2":null,"broker":"tcp://broker:23404","calibration":"/workspace/calibration.v2.json","checkpoint_every_events":50,"compute_delta_check":true,"core_init":"--federates=1 --broker_address=tcp://broker:23404","core_type":"zmq","delta":0.05,"dt":1.0,"exposure_form":"mean","federate_name":"twin_fed","feeder":"/workspace/feeder.npz","future_time_tolerance":1e-09,"helics_time_delta":1e-06,"hold_factor":50.0,"initial_state":null,"input_endpoint":"twin_fed/in","lnr":false,"out_dir":"/workspace/runs/paper1_v5_1mv_s002_bw04_oracle/twin","output_destination":"oracle_fed/in","output_endpoint":"twin_fed/out","patterns":"/workspace/patterns.npz","publish_state":true,"r0":null,"scalarization":"lmax","scenarios":"/workspace/scenarios.csv","steps_per_event":12,"stop_time":0.0,"strict_protocol":true,"tail_time":30.0,"u0_lmax":null,"u0_trace":null,"upstream_federate":"net_fed","validate_only":false},"runtime_counts":{"cached_telemetry_final":45,"events":1100,"messages_accepted":460162,"messages_malformed":0,"messages_received":461426,"messages_stale_or_duplicate":1264,"steps":13200},"schema":"twin.run.meta.v1","status":"complete","timing":{"dt":1.0,"helics_time_delta":1e-06,"stage_offset":2e-06,"steps_per_event":12,"stop_time":13200.0,"tail_time":30.0,"total_steps":13200},"wall_seconds":9525.01524758339,"wire_contract":{"input_endpoint":"twin_fed/in","output_destination":"oracle_fed/in","output_endpoint":"twin_fed/out","score_schema":"twin.score.v1","telemetry_schema":"twin.telemetry.v1"}}
+
+===== FEEDER_ARRAY_SCHEMA =====
+SHA256=9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d
+{"dtype": "float64", "key": "H", "shape": [583, 491], "values_read": false}
+{"dtype": "float64", "key": "H_pseudo", "shape": [538, 491], "values_read": false}
+{"dtype": "float64", "key": "H_telemetry", "shape": [45, 491], "values_read": false}
+{"dtype": "float64", "key": "Q", "shape": [491, 491], "values_read": false}
+{"dtype": "<U1520", "key": "meta", "shape": [], "values_read": false}
+{"dtype": "int64", "key": "n_telemetry", "shape": [], "values_read": false}
+{"dtype": "int64", "key": "node2sn", "shape": [278], "values_read": false}
+{"dtype": "<U10", "key": "node_order", "shape": [278], "values_read": false}
+{"dtype": "float64", "key": "sigma2", "shape": [583], "values_read": false}
+{"dtype": "float64", "key": "sigma2_pseudo", "shape": [538], "values_read": false}
+{"dtype": "float64", "key": "sigma2_telemetry", "shape": [45], "values_read": false}
+{"dtype": "int64", "key": "slack_supernodes", "shape": [3], "values_read": false}
+{"dtype": "int64", "key": "theta_idx", "shape": [244], "values_read": false}
+
+===== PATTERNS_ARRAY_SCHEMA =====
+SHA256=52b7046e902d3594158e36766cadc4ea12b7d859f5c91edb025e3d2286f582d8
+{"dtype": "float64", "key": "B", "shape": [1100, 583], "values_read": false}
+{"dtype": "float64", "key": "D", "shape": [1100, 583], "values_read": false}
+{"dtype": "float64", "key": "P", "shape": [1100, 583], "values_read": false}
+{"dtype": "int64", "key": "home_supernode", "shape": [45], "values_read": false}
+{"dtype": "float64", "key": "leverage", "shape": [45], "values_read": false}
+{"dtype": "<U149", "key": "meta", "shape": [], "values_read": false}
+{"dtype": "int64", "key": "n_telemetry", "shape": [], "values_read": false}
+
+LIVE_FILES_MODIFIED=False
+SIMULATION_STARTED=False
+PERFORMANCE_OUTCOME_COLUMNS_READ=False
+PERFORMANCE_OUTCOMES_INSPECTED=False
+FULL_CAMPAIGN_AUTHORIZED=False
+CALIBRATION_AUTHORIZED=False
+PAPER1_V5_2_ROOT_CAUSE_CONTEXT_READY

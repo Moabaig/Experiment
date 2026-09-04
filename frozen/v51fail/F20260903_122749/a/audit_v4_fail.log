@@ -1,0 +1,13 @@
+ Container real_experiment_bundle-dev-run-4990c3c2966d Creating 
+ Container real_experiment_bundle-dev-run-4990c3c2966d Created 
+PAPER1_V5_1_ORACLE_MECHANICAL_AUDIT
+RUN_ID= paper1_v5_1mv_s002_bw04_oracle
+PERFORMANCE_OUTCOME_COLUMNS_READ=False
+MECHANICAL_SUMMARY= {"accepted_count":3288,"accepted_fraction":0.24909090909090909,"accepted_norm_ratio_max":22.97215999777034,"accepted_norm_ratio_median":9.990395715507233,"accepted_norm_ratio_p99":22.755987373344446,"bootstrap_candidate_norm":23.82046228511704,"bootstrap_norm_ratio":0.7719489821475758,"bootstrap_position":12,"bootstrap_step_index":12,"bootstrap_truth_norm":30.857560325875536,"events":1100,"external_support_present_fraction":1.0,"fixed_jump_limit":22.15851980616034,"held_count":9912,"hold_reason_counts":{"accepted":3287,"bootstrap_accept":1,"jump_guard":6948,"solve_inexact":2964},"jump_guard_count":6948,"no_received_measurements_fraction":0.0,"prebootstrap_solve_inexact_count":12,"pseudo_only_fraction":0.0,"rank_max":491,"rank_min":489,"reliable_candidate_norm_max":707.816116473762,"reliable_candidate_norm_median":382.2873287011711,"reliable_candidate_norm_min":23.82046228511704,"reliable_condition_max":111235.24761490228,"reliable_count":10236,"reliable_fraction":0.7754545454545455,"reliable_norm_ratio_max":22.97215999777034,"reliable_rank_min":491,"steps":13200,"truth_norm_max":30.99057372390177,"truth_norm_median":30.80522936907015,"truth_norm_min":30.59906783901294}
+Traceback (most recent call last):
+  File "/workspace/audit_paper1_v5_1_oracle_mechanical_v4.py", line 340, in <module>
+    require(float(np.mean(accepted)) > 0.5, "fewer than half of oracle steps update state")
+  File "/workspace/audit_paper1_v5_1_oracle_mechanical_v4.py", line 67, in require
+    raise RuntimeError(message)
+RuntimeError: fewer than half of oracle steps update state
+

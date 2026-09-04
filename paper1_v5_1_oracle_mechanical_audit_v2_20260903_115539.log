@@ -1,0 +1,12 @@
+ Container real_experiment_bundle-dev-run-0c5f07407170 Creating 
+ Container real_experiment_bundle-dev-run-0c5f07407170 Created 
+PAPER1_V5_1_ORACLE_MECHANICAL_AUDIT
+RUN_ID= paper1_v5_1mv_s002_bw04_oracle
+PERFORMANCE_OUTCOME_COLUMNS_READ=False
+Traceback (most recent call last):
+  File "/workspace/audit_paper1_v5_1_oracle_mechanical_v2.py", line 246, in <module>
+    require(bool(np.allclose(numbers(step["model_increment_scale"]), MODEL_INCREMENT_SCALE, rtol=0.0, atol=1e-15)), "model increment scale mismatch")
+  File "/workspace/audit_paper1_v5_1_oracle_mechanical_v2.py", line 66, in require
+    raise RuntimeError(message)
+RuntimeError: model increment scale mismatch
+

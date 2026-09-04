@@ -1,0 +1,17 @@
+﻿{
+    "schema":  "twin.factor.cell.record.v3",
+    "run_id":  "factor_v3_s001_bw02_100kbps",
+    "seed_index":  1,
+    "physical_seed":  81001,
+    "power_seed":  12001,
+    "network_seed":  22001,
+    "network_run":  1,
+    "bandwidth_level":  "bw02_100kbps",
+    "bandwidth_cap_bps":  100000,
+    "truth_file":  "truth.eval.factor.v3.seed001.npz",
+    "truth_sha256":  "c46c196d2b3fa32e505b64d5cd619c727b09c7385146f53b06a64991cdd32b55",
+    "factor_design_sha256":  "c88b5ba9680632eca2672f586628fddc2970de76d12c93108b87ae682840fd8f",
+    "calibration_sha256":  "175e513958464158232a4bf9c1014d0059710f2e38b0531ca9db7519ae1f0f78",
+    "gamma_sha256":  "964e2e4d8229aef1533e894c6b724d91f9a70e4beb5cfa367e27dfecd63b23d0",
+    "status":  "complete"
+}

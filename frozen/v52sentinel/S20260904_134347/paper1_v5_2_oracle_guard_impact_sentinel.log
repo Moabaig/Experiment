@@ -1,0 +1,18 @@
+ Container real_experiment_bundle-dev-run-9533c0ca4c81 Creating 
+ Container real_experiment_bundle-dev-run-9533c0ca4c81 Created 
+PAPER1_V5_2_ORACLE_GUARD_IMPACT_SENTINEL
+RUN_ID=paper1_v5_2mv_s002_bw04_oracle
+SINGLE_CELL_EXPLORATORY_ONLY=True
+EVENT_LEVEL_ONLY=True
+PERFORMANCE_OUTCOME_COLUMNS_READ=True
+PERFORMANCE_OUTCOMES_INSPECTED=True
+CALIBRATION_AUTHORIZED=False
+PARAMETER_TUNING_AUTHORIZED=False
+FULL_CAMPAIGN_AUTHORIZED=False
+Traceback (most recent call last):
+  File "/workspace/analyze_paper1_v5_2_oracle_guard_impact_sentinel.py", line 351, in <module>
+    require(not bool(np.any(labels & nominal)), "an event is both nominal and oracle-positive")
+  File "/workspace/analyze_paper1_v5_2_oracle_guard_impact_sentinel.py", line 57, in require
+    raise RuntimeError(message)
+RuntimeError: an event is both nominal and oracle-positive
+

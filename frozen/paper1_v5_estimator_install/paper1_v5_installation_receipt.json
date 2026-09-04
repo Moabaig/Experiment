@@ -1,0 +1,14 @@
+﻿{
+    "schema":  "paper1.v5.estimator.installation.v1",
+    "installed_utc":  "2026-09-02T05:28:44.4205146Z",
+    "previous_live_sha256":  "019D18558BAA377252AE69913E382A3ABD7DED4A606A9385759790BBF1711E1E",
+    "installed_live_sha256":  "009BDCC85FEC147D0885BEC97F0C762DE924626A5F3B8148516CCB56A8D822CF",
+    "guard_tests_passed":  6,
+    "logging_tests_passed":  8,
+    "pseudo_only_external_support_exclusivity":  true,
+    "authorization_state":  "mechanical_validation_only",
+    "performance_outcomes_inspected":  false,
+    "v4_calibration_reusable":  false,
+    "v4_thresholds_reusable":  false,
+    "full_campaign_authorized":  false
+}

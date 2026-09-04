@@ -1,0 +1,399 @@
+
+===== SOURCE LINES 210-250 =====
+00210:         return None
+00211: 
+00212: 
+00213: def write_json_atomic(path: Path, data: dict[str, Any]) -> None:
+00214:     path.parent.mkdir(parents=True, exist_ok=True)
+00215:     temporary = path.with_suffix(path.suffix + ".tmp")
+00216:     with temporary.open("w", encoding="utf-8") as handle:
+00217:         json.dump(json_safe(data), handle, indent=2, sort_keys=True)
+00218:         handle.write("\n")
+00219:     temporary.replace(path)
+00220: 
+00221: 
+00222: def write_parquet_atomic(path: Path, frame: pd.DataFrame) -> None:
+00223:     path.parent.mkdir(parents=True, exist_ok=True)
+00224:     temporary = path.with_suffix(path.suffix + ".tmp")
+00225:     frame.to_parquet(temporary, index=False)
+00226:     temporary.replace(path)
+00227: 
+00228: 
+00229: def load_calibration(path: Path | None) -> dict[str, Any]:
+00230:     if path is None:
+00231:         return {}
+00232:     with path.open("r", encoding="utf-8") as handle:
+00233:         data = json.load(handle)
+00234:     if not isinstance(data, dict):
+00235:         raise ValueError("calibration file must contain a JSON object")
+00236:     schema = data.get("schema")
+00237:     if schema != "twin.calibration.v2":
+00238:         raise ValueError(
+00239:             f"unsupported calibration schema {schema!r}; regenerate calibration "
+00240:             "with the repaired calibrate_twin.py using step-level "
+00241:             "oracle/oracle_scores.parquet"
+00242:         )
+00243:     return data
+00244: 
+00245: 
+00246: def nested_number(data: dict[str, Any], paths: Iterable[tuple[str, ...]]) -> float | None:
+00247:     for keys in paths:
+00248:         current: Any = data
+00249:         for key in keys:
+00250:             if not isinstance(current, dict) or key not in current:
+
+===== SOURCE LINES 778-818 =====
+00778:         if math.isfinite(exposure["u_lmax_delta"]):
+00779:             s_delta_lmax = (
+00780:                 r / self.metric.cfg.r0
+00781:                 + exposure["u_lmax_delta"] / self.metric.cfg.u0_lmax
+00782:             )
+00783:         if math.isfinite(exposure["u_trace_delta"]):
+00784:             s_delta_trace = (
+00785:                 r / self.metric.cfg.r0
+00786:                 + exposure["u_trace_delta"] / self.metric.cfg.u0_trace
+00787:             )
+00788:         active_s = s_lmax if self.metric.cfg.scalarization == "lmax" else s_trace
+00789:         if not math.isfinite(active_s):
+00790:             raise RuntimeError("active trust score is nonfinite")
+00791: 
+00792:         scenario = self.scenarios.iloc[event_id]
+00793:         row: dict[str, Any] = {
+00794:             "time": float(logical_time),
+00795:             "step_index": int(step_index),
+00796:             "event_id": int(event_id),
+00797:             "step_in_event": int(step_index % steps_per_event),
+00798:             "pattern_id": int(event_id),
+00799:             "arm": None if pd.isna(scenario.get("arm")) else str(scenario.get("arm")),
+00800:             "regime": None
+00801:             if pd.isna(scenario.get("regime"))
+00802:             else str(scenario.get("regime")),
+00803:             "stratum": None
+00804:             if pd.isna(scenario.get("stratum"))
+00805:             else int(scenario.get("stratum")),
+00806:             "bandwidth_level": self.bandwidth_level,
+00807:             "bandwidth_cap_bps": self.bandwidth_cap_bps,
+00808:             "r": r,
+00809:             "chi2": residual["chi2"],
+00810:             "huber": residual["huber"],
+00811:             "lnr": residual["lnr"],
+00812:             "u_lmax": exposure["u_lmax"],
+00813:             "u_trace": exposure["u_trace"],
+00814:             "u_lmax_mean": exposure["u_lmax_mean"],
+00815:             "u_trace_mean": exposure["u_trace_mean"],
+00816:             "u_lmax_delta": exposure["u_lmax_delta"],
+00817:             "u_trace_delta": exposure["u_trace_delta"],
+00818:             "s_lmax": s_lmax,
+
+===== SOURCE LINES 832-945 =====
+00832:             "alarm": bool(active_s > math.log(1.0 / self.metric.cfg.T_th)),
+00833:             "sB1": r / self.metric.cfg.r0 + self.beta1 * (1.0 - b1),
+00834:             "sB2": r / self.metric.cfg.r0 + self.beta2 * b2,
+00835:             "s_gated_lmax": b1 * r / self.metric.cfg.r0
+00836:             + exposure["u_lmax"] / self.metric.cfg.u0_lmax,
+00837:             "s_gated_trace": float("nan")
+00838:             if not math.isfinite(exposure["u_trace"])
+00839:             else b1 * r / self.metric.cfg.r0
+00840:             + exposure["u_trace"] / self.metric.cfg.u0_trace,
+00841:             "b1": b1,
+00842:             "b2": b2,
+00843:             "n_rx": int(rx.sum()),
+00844:             "n_rx_telemetry": int(rx[: self.n_telemetry].sum()),
+00845:             "cached_telemetry": int(sum(sample is not None for sample in self.samples)),
+00846:             "new_telemetry": int(self.new_since_update),
+00847:             "held": bool(held),
+00848:             "solve_exact": bool(solved_exactly),
+00849:             "residual_available": bool(np.any(rx & (gamma > 0.0))),
+00850:             "mean_age_telemetry": b2,
+00851:             "max_age_telemetry": float(np.max(age[: self.n_telemetry])),
+00852:             "lam_min": exposure["lam_min"],
+00853:             "lam_min_mean": exposure["lam_min_mean"],
+00854:             "lam_min_delta": exposure["lam_min_delta"],
+00855:             "trace_inverse": exposure["trace_inverse"],
+00856:             "floor_kind": exposure["floor_kind"],
+00857:             "floor_deflation": exposure["floor_deflation"],
+00858:             "loss_quantile": int(exposure["loss_quantile"]),
+00859:             "delta_floor_kind": exposure["delta_floor_kind"],
+00860:             "delta_floor_deflation": exposure["delta_floor_deflation"],
+00861:             "delta_loss_quantile": int(exposure["delta_loss_quantile"]),
+00862:         }
+00863:         self.new_since_update = 0
+00864:         return row, x_hat
+00865: 
+00866: 
+00867: MAX_EVENT_COLUMNS = (
+00868:     "s",
+00869:     "s_lmax",
+00870:     "s_trace",
+00871:     "r",
+00872:     "chi2",
+00873:     "huber",
+00874:     "lnr",
+00875:     "u_lmax",
+00876:     "u_trace",
+00877:     "u_lmax_mean",
+00878:     "u_trace_mean",
+00879:     "u_lmax_delta",
+00880:     "u_trace_delta",
+00881:     "sB1",
+00882:     "sB2",
+00883:     "s_gated_lmax",
+00884:     "s_gated_trace",
+00885:     "s_delta_lmax",
+00886:     "s_delta_trace",
+00887:     "T_delta_lmax",
+00888:     "b2",
+00889:     "mean_age_telemetry",
+00890:     "max_age_telemetry",
+00891: )
+00892: 
+00893: 
+00894: def aggregate_events(scores: pd.DataFrame) -> pd.DataFrame:
+00895:     rows: list[dict[str, Any]] = []
+00896:     for _, block in scores.groupby("event_id", sort=True):
+00897:         first = block.iloc[0]
+00898:         row: dict[str, Any] = {
+00899:             "event_id": int(first["event_id"]),
+00900:             "pattern_id": int(first["pattern_id"]),
+00901:             "arm": first["arm"],
+00902:             "regime": first["regime"],
+00903:             "stratum": first["stratum"],
+00904:             "bandwidth_level": first["bandwidth_level"],
+00905:             "bandwidth_cap_bps": float(first["bandwidth_cap_bps"]),
+00906:             "T": float(block["T"].min()),
+00907:             "alarm": bool(block["alarm"].any()),
+00908:             "alarm_delta_lmax": bool(block["alarm_delta_lmax"].any()),
+00909:             "b1": float(block["b1"].min()),
+00910:             "n_rx": int(block["n_rx"].min()),
+00911:             "n_rx_telemetry": int(block["n_rx_telemetry"].min()),
+00912:             "held": float(block["held"].mean()),
+00913:             "held_any": bool(block["held"].any()),
+00914:             "residual_available": bool(block["residual_available"].any()),
+00915:             "steps": int(len(block)),
+00916:         }
+00917:         for column in MAX_EVENT_COLUMNS:
+00918:             values = pd.to_numeric(block[column], errors="coerce").to_numpy(float)
+00919:             row[column] = float(np.nanmax(values)) if np.any(np.isfinite(values)) else float("nan")
+00920:         rows.append(row)
+00921:     return pd.DataFrame(rows)
+00922: 
+00923: 
+00924: def first_attribute(module: Any, *names: str) -> Any:
+00925:     for name in names:
+00926:         if hasattr(module, name):
+00927:             return getattr(module, name)
+00928:     raise AttributeError(f"none of {names!r} exists in the HELICS Python module")
+00929: 
+00930: 
+00931: def message_text(helics: Any, message: Any) -> str:
+00932:     if hasattr(helics, "helicsMessageIsValid") and not bool(
+00933:         helics.helicsMessageIsValid(message)
+00934:     ):
+00935:         raise ProtocolError("received an invalid HELICS telemetry message")
+00936:     if hasattr(helics, "helicsMessageGetBytes"):
+00937:         data = bytes(helics.helicsMessageGetBytes(message))
+00938:     else:
+00939:         value = helics.helicsMessageGetString(message)
+00940:         data = value if isinstance(value, bytes) else str(value).encode("utf-8")
+00941:     if not data:
+00942:         raise ProtocolError("received an empty HELICS telemetry payload")
+00943:     try:
+00944:         return data.decode("utf-8")
+00945:     except UnicodeDecodeError as exc:
+
+===== SOURCE LINES 1042-1123 =====
+01042:             print(f"[WARN] rejected telemetry at t={granted_time:.12g}: {exc}", flush=True)
+01043:     return accepted
+01044: 
+01045: 
+01046: def publish_score(
+01047:     helics: Any,
+01048:     endpoint: Any,
+01049:     destination: str,
+01050:     row: dict[str, Any],
+01051:     x_hat: np.ndarray,
+01052:     *,
+01053:     publish_state: bool,
+01054: ) -> None:
+01055:     if not destination:
+01056:         return
+01057:     payload: dict[str, Any] = {
+01058:         "schema": SCORE_SCHEMA,
+01059:         "time": row["time"],
+01060:         "step_index": row["step_index"],
+01061:         "event_id": row["event_id"],
+01062:         "pattern_id": row["pattern_id"],
+01063:         "arm": row["arm"],
+01064:         "regime": row["regime"],
+01065:         "stratum": row["stratum"],
+01066:         "bandwidth_level": row["bandwidth_level"],
+01067:         "bandwidth_cap_bps": row["bandwidth_cap_bps"],
+01068:         "T": row["T"],
+01069:         "s": row["s"],
+01070:         "s_lmax": row["s_lmax"],
+01071:         "s_trace": row["s_trace"],
+01072:         "r": row["r"],
+01073:         "chi2": row["chi2"],
+01074:         "huber": row["huber"],
+01075:         "lnr": row["lnr"],
+01076:         "u_lmax": row["u_lmax"],
+01077:         "u_trace": row["u_trace"],
+01078:         "u_lmax_mean": row["u_lmax_mean"],
+01079:         "u_trace_mean": row["u_trace_mean"],
+01080:         "u_lmax_delta": row["u_lmax_delta"],
+01081:         "u_trace_delta": row["u_trace_delta"],
+01082:         "s_delta_lmax": row["s_delta_lmax"],
+01083:         "s_delta_trace": row["s_delta_trace"],
+01084:         "T_delta_lmax": row["T_delta_lmax"],
+01085:         "alarm_delta_lmax": row["alarm_delta_lmax"],
+01086:         "sB1": row["sB1"],
+01087:         "sB2": row["sB2"],
+01088:         "s_gated_lmax": row["s_gated_lmax"],
+01089:         "s_gated_trace": row["s_gated_trace"],
+01090:         "b1": row["b1"],
+01091:         "b2": row["b2"],
+01092:         "n_rx": row["n_rx"],
+01093:         "n_rx_telemetry": row["n_rx_telemetry"],
+01094:         "held": row["held"],
+01095:         "solve_exact": row["solve_exact"],
+01096:         "floor_kind": row["floor_kind"],
+01097:         "loss_quantile": row["loss_quantile"],
+01098:     }
+01099:     if publish_state:
+01100:         payload["x_hat"] = x_hat.tolist()
+01101:     encoded = json.dumps(json_safe(payload), separators=(",", ":"))
+01102:     send_text(helics, endpoint, encoded, destination)
+01103: 
+01104: 
+01105: def resolved_stop_time(args: argparse.Namespace, pattern_count: int) -> tuple[float, int]:
+01106:     full_steps = pattern_count * args.steps_per_event
+01107:     if args.stop_time <= 0.0:
+01108:         return full_steps * args.dt, full_steps
+01109:     steps_float = args.stop_time / args.dt
+01110:     steps = int(round(steps_float))
+01111:     if not math.isclose(steps_float, steps, rel_tol=0.0, abs_tol=1e-9):
+01112:         raise ValueError("--stop-time must be an integer multiple of --dt")
+01113:     if steps < 1 or steps > full_steps:
+01114:         raise ValueError(
+01115:             f"--stop-time selects {steps} updates; allowed range is 1..{full_steps}"
+01116:         )
+01117:     return float(args.stop_time), steps
+01118: 
+01119: 
+01120: def staged_request_time(
+01121:     step_index: int,
+01122:     *,
+01123:     dt: float,
+
+===== SOURCE LINES 1431-1471 =====
+01431:     )
+01432:     print(
+01433:         f"metric: scalarization={args.scalarization} exposure={args.exposure_form} "
+01434:         f"delta_check={args.compute_delta_check} "
+01435:         f"spectrum_solver=row-scaled-SVD r0={r0:.6g} "
+01436:         f"u0_lmax={u0_lmax:.6g} u0_trace={u0_trace:.6g}",
+01437:         flush=True,
+01438:     )
+01439:     if args.validate_only:
+01440:         print("PRODUCTION_TWIN_VALIDATE_OK", flush=True)
+01441:         return 0
+01442: 
+01443:     output_directory = Path(args.out_dir)
+01444:     output_directory.mkdir(parents=True, exist_ok=True)
+01445:     score_path = output_directory / "scores.parquet"
+01446:     event_path = output_directory / "scores_events.parquet"
+01447:     meta_path = output_directory / "meta.json"
+01448:     files = {
+01449:         "feeder": feeder_path,
+01450:         "patterns": patterns_path,
+01451:         "scenarios": scenarios_path,
+01452:     }
+01453:     if calibration_path is not None:
+01454:         files["calibration"] = calibration_path
+01455:     meta = make_meta(
+01456:         args,
+01457:         files=files,
+01458:         H=H,
+01459:         n_telemetry=n_telemetry,
+01460:         pattern_count=len(P),
+01461:         stop_time=stop_time,
+01462:         total_steps=total_steps,
+01463:         calibration=calibration,
+01464:         status="starting",
+01465:     )
+01466:     write_json_atomic(meta_path, meta)
+01467: 
+01468:     twin = ProductionTwin(
+01469:         H=H,
+01470:         sigma2=sigma2,
+01471:         Q=Q,
+
+===== SOURCE LINES 1524-1591 =====
+01524:                 twin,
+01525:                 granted_time=granted_time,
+01526:                 future_tolerance=args.future_time_tolerance,
+01527:                 strict_protocol=args.strict_protocol,
+01528:             )
+01529:             # Future-dated network delivery can create intermediate grants.
+01530:             # Cache those messages and request the same logical update again.
+01531:             if granted_time + args.future_time_tolerance < requested_time:
+01532:                 continue
+01533: 
+01534:             row, x_hat = twin.update(
+01535:                 logical_time=(step_index + 1) * args.dt,
+01536:                 step_index=step_index,
+01537:                 steps_per_event=args.steps_per_event,
+01538:             )
+01539:             rows.append(row)
+01540:             publish_score(
+01541:                 helics,
+01542:                 output_endpoint,
+01543:                 args.output_destination,
+01544:                 row,
+01545:                 x_hat,
+01546:                 publish_state=args.publish_state,
+01547:             )
+01548: 
+01549:             step_index += 1
+01550:             requested_time = staged_request_time(
+01551:                 step_index,
+01552:                 dt=args.dt,
+01553:                 helics_time_delta=args.helics_time_delta,
+01554:                 stage=2,
+01555:             )
+01556:             if (
+01557:                 args.checkpoint_every_events > 0
+01558:                 and step_index % (
+01559:                     args.checkpoint_every_events * args.steps_per_event
+01560:                 )
+01561:                 == 0
+01562:             ):
+01563:                 partial = pd.DataFrame(rows)
+01564:                 write_parquet_atomic(output_directory / "scores.partial.parquet", partial)
+01565:                 write_parquet_atomic(
+01566:                     output_directory / "scores_events.partial.parquet",
+01567:                     aggregate_events(partial),
+01568:                 )
+01569:                 print(
+01570:                     f"checkpoint: steps={step_index}/{total_steps} "
+01571:                     f"events={step_index // args.steps_per_event}",
+01572:                     flush=True,
+01573:                 )
+01574: 
+01575:         if args.tail_time > 0.0:
+01576:             tail_target = (
+01577:                 stop_time + args.tail_time + 2.0 * args.helics_time_delta
+01578:             )
+01579:             while True:
+01580:                 granted_time = float(
+01581:                     helics.helicsFederateRequestTime(federate, tail_target)
+01582:                 )
+01583:                 drain_messages(
+01584:                     helics,
+01585:                     input_endpoint,
+01586:                     twin,
+01587:                     granted_time=granted_time,
+01588:                     future_tolerance=args.future_time_tolerance,
+01589:                     strict_protocol=args.strict_protocol,
+01590:                 )
+01591:                 if granted_time + args.future_time_tolerance >= tail_target:

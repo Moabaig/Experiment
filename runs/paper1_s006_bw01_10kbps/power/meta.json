@@ -1,0 +1,59 @@
+{
+  "completed_utc": "2026-09-02T01:05:07Z",
+  "created_utc": "2026-09-02T00:20:47Z",
+  "dimensions": {
+    "states": 491,
+    "steps": 13200,
+    "telemetry": 45
+  },
+  "git_sha": null,
+  "host": "7c853be5f9a6",
+  "inputs": {
+    "feeder": {
+      "path": "/workspace/feeder.npz",
+      "sha256": "9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d"
+    },
+    "truth": {
+      "path": "/workspace/truth.eval.paper1.v4.seed006.npz",
+      "sha256": "a2c4c855e37914f0036af8e79d7d2aca26f53969b5d037baad1f0d434568e57e"
+    }
+  },
+  "packages": {
+    "helics": "3.6.1",
+    "numpy": "2.1.3"
+  },
+  "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "python": "3.11.11 (main, Aug 27 2026, 18:22:12) [GCC 11.4.0]",
+  "resolved_arguments": {
+    "allow_linearized_telemetry": false,
+    "broker": "tcp://broker:23404",
+    "core_init": "--federates=1 --broker_address=tcp://broker:23404",
+    "core_type": "zmq",
+    "destination": "net_fed/in",
+    "dt": 1.0,
+    "federate_name": "power_fed",
+    "feeder": "/workspace/feeder.npz",
+    "helics_time_delta": 1e-06,
+    "measurement_noise": true,
+    "out_dir": "/workspace/runs/paper1_s006_bw01_10kbps/power",
+    "output_endpoint": "power_fed/out",
+    "seed": 12006,
+    "steps_per_event": 12,
+    "stop_time": 0.0,
+    "truth": "/workspace/truth.eval.paper1.v4.seed006.npz",
+    "validate_only": false
+  },
+  "runtime_counts": {
+    "bytes_sent": 87148654,
+    "packets_sent": 594000
+  },
+  "schema": "power.run.meta.v1",
+  "seed_stream": {
+    "independent_from_network_seed": true,
+    "role": "physical_measurement_noise",
+    "seed": 12006
+  },
+  "status": "complete",
+  "telemetry_source": "truth.z_true",
+  "wall_seconds": 2659.4919772148132
+}

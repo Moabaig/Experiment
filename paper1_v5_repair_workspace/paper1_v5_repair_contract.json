@@ -1,0 +1,36 @@
+﻿{
+    "schema":  "paper1.estimator.repair.contract.v5",
+    "predecessor":  "paper1.v4.aborted_implementation_validation",
+    "v4_source_sha256":  "019D18558BAA377252AE69913E382A3ABD7DED4A606A9385759790BBF1711E1E",
+    "performance_outcomes_inspected":  false,
+    "confirmed_defects":  [
+                              "absolute_candidate_norm_guard_rejects_valid_bootstrap",
+                              "hold_status_does_not_record_rejection_reason",
+                              "numerical_solvability_not_separated_from_external_support",
+                              "pseudo_measurements_recorded_as_fresh_received_inputs"
+                          ],
+    "required_v5_behaviour":  [
+                                  "accept_first_finite_exact_candidate_as_bootstrap",
+                                  "apply_guard_to_state_increment_after_bootstrap",
+                                  "preserve_previous_state_when_candidate_is_rejected",
+                                  "record_solve_inexact_nonfinite_jump_guard_and_unobservable_separately",
+                                  "record_external_telemetry_support_separately_from_pseudo_support",
+                                  "identify_pseudo_only_operation",
+                                  "preserve_existing_estimator_interface_until_call_sites_are audited"
+                              ],
+    "prohibited_actions":  [
+                               "reuse_v4_matched_far_thresholds",
+                               "resume_v4_confirmatory_campaign",
+                               "inspect_v4_performance_outcomes_for_tuning",
+                               "overwrite_v4_archived_source",
+                               "silently_impute_nonfinite_diagnostics"
+                           ],
+    "required_regression_tests":  [
+                                      "valid_initial_candidate_with_norm_near_31_is_accepted",
+                                      "finite_exact_oracle_candidate_does_not_permanently_hold",
+                                      "nonfinite_candidate_is_rejected",
+                                      "inexact_solution_is_rejected",
+                                      "extreme_post_bootstrap_jump_is_rejected",
+                                      "pseudo_only_state_is_flagged_as_not_externally_supported"
+                                  ]
+}

@@ -1,0 +1,63 @@
+{
+  "schema": "opendss.physical-design.v1",
+  "event_mix": {
+    "nominal": 0.55,
+    "load_ramp": 0.18,
+    "parameter_change": 0.15,
+    "topology_change": 0.12
+  },
+  "background": {
+    "event_base_multiplier_min": 0.85,
+    "event_base_multiplier_max": 1.15,
+    "ou_sigma": 0.04,
+    "ou_tau_seconds": 30.0,
+    "cloud_sigma": 0.25,
+    "cloud_tau_seconds": 20.0,
+    "der_load_fraction": 0.30,
+    "motor_step_probability_per_second": 0.002,
+    "motor_step_fraction": 0.15,
+    "motor_step_decay": 0.98,
+    "multiplier_floor": 0.20,
+    "multiplier_ceiling": 2.50
+  },
+  "load_ramp": {
+    "candidate_roots": ["35", "67", "76", "97", "108"],
+    "fraction_min": 0.05,
+    "fraction_max": 0.25,
+    "directions": [-1, 1]
+  },
+  "parameter_change": {
+    "transformers": ["reg1a", "reg2a", "reg3a", "reg3c", "reg4a", "reg4b", "reg4c"],
+    "tap_step_pu": 0.00625,
+    "tap_steps": [1, 2, 3],
+    "directions": [-1, 1],
+    "tap_min_pu": 0.90,
+    "tap_max_pu": 1.10
+  },
+  "topology_change": {
+    "ties": [
+      {
+        "name": "StudyTie7",
+        "phases": 3,
+        "bus1": "151",
+        "bus2": "300",
+        "length": 0.001,
+        "r1": 0.001,
+        "r0": 0.001,
+        "x1": 0.0,
+        "x0": 0.0
+      },
+      {
+        "name": "StudyTie8",
+        "phases": 1,
+        "bus1": "54.1",
+        "bus2": "94.1",
+        "length": 0.001,
+        "r1": 0.001,
+        "r0": 0.001,
+        "x1": 0.0,
+        "x0": 0.0
+      }
+    ]
+  }
+}

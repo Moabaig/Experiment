@@ -1,0 +1,162 @@
+{
+  "calibration_file_content": {
+    "created_utc": "2026-08-30T17:58:42Z",
+    "hybrid_calibration": {
+      "auc_sB1": 0.5874199349376654,
+      "auc_sB2": 0.5721040189125296,
+      "beta1": 0.01973554287445086,
+      "beta2": 8.561699233270798e-07,
+      "objective": "maximize calibration event AUC from exact step maxima"
+    },
+    "normalizers": {
+      "r0": 16124.353830165805,
+      "u0_lmax": 4.641211459353103e-06,
+      "u0_trace": 1.4269342674497839e-05
+    },
+    "schema": "twin.calibration.v2",
+    "selection": {
+      "all_events": 1100,
+      "all_steps": 13200,
+      "ample_regime": "ample",
+      "moderate_events": 117,
+      "moderate_regime": "moderate",
+      "negative_events": 1053,
+      "nominal_ample_events": 117,
+      "positive_events": 47
+    },
+    "sources": [
+      {
+        "path": "/workspace/runs/calibration_v2_final_001/oracle/oracle_scores.parquet",
+        "sha256": "546376204bc95998f3715a1af2c19eaadb4caa1be9960ba642def383b45d843b"
+      }
+    ],
+    "targets": {
+      "moderate_target_trust": 0.7,
+      "nominal_trust": 0.9,
+      "normalizer_quantile": 0.5
+    },
+    "threshold": {
+      "T_th": 1.0322936125408775e-30,
+      "calibration_population": "nominal_ample_events",
+      "event_score_construction": "max_step(r/r0 + u/u0)",
+      "realized_calibration_far": 0.008547008547008548,
+      "realized_nominal_ample_far": 0.008547008547008548,
+      "scalarization": "lmax",
+      "score_threshold": 69.04576965495076,
+      "target_far": 0.01
+    }
+  },
+  "completed_utc": "2026-09-01T17:32:50Z",
+  "created_utc": "2026-09-01T16:48:18Z",
+  "dimensions": {
+    "measurements": 583,
+    "patterns": 1100,
+    "states": 491,
+    "telemetry": 45
+  },
+  "factor_design": {
+    "bandwidth_cap_bps": 10000.0,
+    "bandwidth_level": "bw01_10kbps",
+    "schema": "twin.factor.cell.v3",
+    "transform": "B_effective = minimum(B_pattern, bandwidth_cap_bps)"
+  },
+  "git_sha": null,
+  "host": "6692c10269e9",
+  "inputs": {
+    "calibration": {
+      "path": "/workspace/calibration.v2.json",
+      "sha256": "175e513958464158232a4bf9c1014d0059710f2e38b0531ca9db7519ae1f0f78"
+    },
+    "feeder": {
+      "path": "/workspace/feeder.npz",
+      "sha256": "9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d"
+    },
+    "patterns": {
+      "path": "/workspace/patterns.npz",
+      "sha256": "52b7046e902d3594158e36766cadc4ea12b7d859f5c91edb025e3d2286f582d8"
+    },
+    "scenarios": {
+      "path": "/workspace/scenarios.csv",
+      "sha256": "1abe9ac513e3d9e3e218eb3da2bfa8581598ead64a7713c8b98d4c27e4f6401d"
+    }
+  },
+  "packages": {
+    "helics": "3.6.1",
+    "numpy": "2.1.3",
+    "pandas": "2.2.3",
+    "pyarrow": "18.1.0",
+    "scipy": "1.14.1"
+  },
+  "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "python": "3.11.11 (main, Aug 27 2026, 18:22:12) [GCC 11.4.0]",
+  "resolved_arguments": {
+    "T_th": 1.0322936125408775e-30,
+    "allow_uncalibrated": false,
+    "b_min": 1.0,
+    "bandwidth_cap_bps": 10000.0,
+    "bandwidth_level": "bw01_10kbps",
+    "beta1": null,
+    "beta2": null,
+    "broker": "tcp://broker:23404",
+    "calibration": "/workspace/calibration.v2.json",
+    "checkpoint_every_events": 50,
+    "compute_delta_check": true,
+    "core_init": "--federates=1 --broker_address=tcp://broker:23404",
+    "core_type": "zmq",
+    "delta": 0.05,
+    "dt": 1.0,
+    "exposure_form": "mean",
+    "federate_name": "twin_fed",
+    "feeder": "/workspace/feeder.npz",
+    "future_time_tolerance": 1e-09,
+    "helics_time_delta": 1e-06,
+    "hold_factor": 50.0,
+    "initial_state": null,
+    "input_endpoint": "twin_fed/in",
+    "lnr": false,
+    "out_dir": "/workspace/runs/paper1_s004_bw01_10kbps/twin",
+    "output_destination": "oracle_fed/in",
+    "output_endpoint": "twin_fed/out",
+    "patterns": "/workspace/patterns.npz",
+    "publish_state": true,
+    "r0": null,
+    "scalarization": "lmax",
+    "scenarios": "/workspace/scenarios.csv",
+    "steps_per_event": 12,
+    "stop_time": 0.0,
+    "strict_protocol": true,
+    "tail_time": 30.0,
+    "u0_lmax": null,
+    "u0_trace": null,
+    "upstream_federate": "net_fed",
+    "validate_only": false
+  },
+  "runtime_counts": {
+    "cached_telemetry_final": 45,
+    "events": 1100,
+    "messages_accepted": 460251,
+    "messages_malformed": 0,
+    "messages_received": 461442,
+    "messages_stale_or_duplicate": 1191,
+    "steps": 13200
+  },
+  "schema": "twin.run.meta.v1",
+  "status": "complete",
+  "timing": {
+    "dt": 1.0,
+    "helics_time_delta": 1e-06,
+    "stage_offset": 2e-06,
+    "steps_per_event": 12,
+    "stop_time": 13200.0,
+    "tail_time": 30.0,
+    "total_steps": 13200
+  },
+  "wall_seconds": 2671.676599264145,
+  "wire_contract": {
+    "input_endpoint": "twin_fed/in",
+    "output_destination": "oracle_fed/in",
+    "output_endpoint": "twin_fed/out",
+    "score_schema": "twin.score.v1",
+    "telemetry_schema": "twin.telemetry.v1"
+  }
+}

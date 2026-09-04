@@ -1,0 +1,21 @@
+ Network real_experiment_bundle_default Creating 
+ Network real_experiment_bundle_default Creating 
+ Network real_experiment_bundle_default Created 
+ Network real_experiment_bundle_default Created 
+ Container real_experiment_bundle-dev-run-0fd639a3bf2a Creating 
+ Container real_experiment_bundle-dev-run-0fd639a3bf2a Created 
+PAPER1_V5_2_ORACLE_MECHANICAL_AUDIT
+RUN_ID=paper1_v5_2mv_s002_bw04_oracle
+PERFORMANCE_OUTCOME_COLUMNS_READ=False
+PERFORMANCE_OUTCOMES_INSPECTED=False
+MECHANICAL_SUMMARY={"accepted_count":10004,"accepted_fraction":0.7578787878787879,"accepted_norm_ratio_max":0.9932292678020117,"accepted_norm_ratio_median":0.9604183238008979,"accepted_norm_ratio_p99":0.9892182168935537,"bootstrap_norm_ratio":0.7719489821475758,"bootstrap_step_index":12,"events":1100,"external_support_present_fraction":1.0,"held_count":3196,"hold_reason_counts":{"accepted":10003,"bootstrap_accept":1,"process_guard":3184,"solve_inexact":12},"measurement_full_rank_fraction":0.7754545454545455,"posterior_reliable_fraction":0.9990909090909091,"prior_only_hold_count":0,"process_diagnostic_invalid_count":0,"process_guard_count":3184,"process_increment_mahalanobis_max":1042.5615913688944,"process_increment_mahalanobis_p99":869.9989511038351,"process_prior_active_fraction":0.9990151515151515,"process_rms_increment":0.03596661362814668,"pseudo_only_fraction":0.0,"q_eigenvalue_max":0.0007785028595447724,"q_eigenvalue_min":1.3173088552711708e-07,"reliable_count":13188,"reliable_fraction":0.9990909090909091,"reliable_norm_ratio_max":0.9932292678020117,"steps":13200}
+REPORT=/workspace/frozen/v52audit/A20260903_223859/paper1_v5_2_oracle_mechanical_audit.json
+REPORT_SHA256=BDB0B93BF7312B10549456E7646812C24FF6E6B00AB9FBD459145B306A8E1F24
+MECHANICAL_GATES_PASSED=13
+SIMULATION_RERUN=False
+IMPLEMENTATION_MODIFIED=False
+FULL_CAMPAIGN_AUTHORIZED=False
+CALIBRATION_AUTHORIZED=False
+PERFORMANCE_OUTCOME_COLUMNS_READ=False
+PERFORMANCE_OUTCOMES_INSPECTED=False
+PAPER1_V5_2_ORACLE_MECHANICAL_AUDIT_OK

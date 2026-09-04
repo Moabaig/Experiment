@@ -1,0 +1,19 @@
+﻿{
+    "schema":  "twin.factor.cell.record.paper1.v4",
+    "run_id":  "paper1_s006_bw02_100kbps",
+    "seed_index":  6,
+    "physical_seed":  81006,
+    "power_seed":  12006,
+    "network_seed":  22006,
+    "network_run":  1,
+    "bandwidth_level":  "bw02_100kbps",
+    "bandwidth_cap_bps":  100000,
+    "truth_file":  "truth.eval.paper1.v4.seed006.npz",
+    "truth_sha256":  "a2c4c855e37914f0036af8e79d7d2aca26f53969b5d037baad1f0d434568e57e",
+    "factor_design_sha256":  "f4c2b422b3fb113f1e33bd19aafd89f1591f18f1c5272d88a02d84a3d8d154f1",
+    "calibration_sha256":  "175e513958464158232a4bf9c1014d0059710f2e38b0531ca9db7519ae1f0f78",
+    "gamma_sha256":  "964e2e4d8229aef1533e894c6b724d91f9a70e4beb5cfa367e27dfecd63b23d0",
+    "matched_far_threshold_sha256":  "2e968f235d3ece872e402dd15cbe9d618a34c2862dd885c65105fc96c640303f",
+    "qualification_seed_excluded":  true,
+    "status":  "complete"
+}

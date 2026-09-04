@@ -1,0 +1,53 @@
+{
+  "bandwidth_model": {
+    "caps_10kbps_through_oracle_have_identical_static_masks": true,
+    "metric_uses_binary_feasibility_above_b_min": true,
+    "network_cosimulation_required_to_distinguish_upper_caps": true
+  },
+  "dimensions": {
+    "measurements": 583,
+    "patterns": 1100,
+    "states": 491,
+    "telemetry": 45
+  },
+  "files": {
+    "feeder_sha256": "9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d",
+    "patterns_sha256": "52b7046e902d3594158e36766cadc4ea12b7d859f5c91edb025e3d2286f582d8",
+    "scenarios_sha256": "1abe9ac513e3d9e3e218eb3da2bfa8581598ead64a7713c8b98d4c27e4f6401d"
+  },
+  "identity_effect": {
+    "arm_c_events": 300,
+    "precomputed_geometry_crosscheck": {
+      "finite_rows": 1100,
+      "maximum_absolute_difference": 0.011122675803681759,
+      "spearman": 0.9924789139468544
+    },
+    "r2_log_lam_adding_precomputed_leverage": 0.15561966678720995,
+    "r2_log_lam_from_count_and_age": 0.14775959675817307,
+    "spearman_configured_b1_vs_u_arm_c": -0.5984080533927183,
+    "spearman_expected_availability_vs_u_all": -0.741369437502323,
+    "top_group_removal_lam_ratio": {
+      "1": 0.9932949821670639,
+      "16": 4.858825385705654e-13,
+      "2": 0.5652568982569958,
+      "4": 0.5062351586701115,
+      "8": 4.858825183090462e-13
+    },
+    "within_matched_strata_present": true
+  },
+  "perfect_information": {
+    "condition_number": 4402128440.24652,
+    "lambda_max": 25037939817.654903,
+    "lambda_min": 5.68768952508182,
+    "perfect_u_lmax": 0.0,
+    "perfect_u_trace": 0.0
+  },
+  "schema": "paper1.static.geometry.v1",
+  "status": "diagnostic_not_confirmatory_performance",
+  "telemetry_tau_seconds": {
+    "infinite_channels": 0,
+    "maximum": 189.78067050243132,
+    "median": 4.635768827536195,
+    "minimum": 0.0038743653402261804
+  }
+}

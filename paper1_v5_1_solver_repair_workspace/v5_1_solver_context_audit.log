@@ -1,0 +1,10 @@
+ Container real_experiment_bundle-dev-run-96daacf4f537 Creating 
+ Container real_experiment_bundle-dev-run-96daacf4f537 Created 
+Traceback (most recent call last):
+  File "/workspace/paper1_v5_1_solver_repair_workspace/audit_v5_1_solver_and_twin_context.py", line 166, in <module>
+    exercise_case(
+  File "/workspace/paper1_v5_1_solver_repair_workspace/audit_v5_1_solver_and_twin_context.py", line 100, in exercise_case
+    gamma[rx[:n_telemetry]] = 10.0 ** rng.uniform(
+    ~~~~~^^^^^^^^^^^^^^^^^^
+IndexError: boolean index did not match indexed array along axis 0; size of axis is 583 but size of corresponding boolean axis is 45
+

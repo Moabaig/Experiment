@@ -1,0 +1,9 @@
+V5.2 implementation lock conflicts with installed files.
+At C:\Users\Administrator\Downloads\DT Paper 
+1\DT_Paper_Files\preflight\real_experiment_bundle\real_experiment_bundle\run_paper1_factor_campaign_v5_2_mechanical.ps1:233 
+char:9
++         throw "V5.2 implementation lock conflicts with installed file ...
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (V5.2 implementa...nstalled files.:String) [], RuntimeException
+    + FullyQualifiedErrorId : V5.2 implementation lock conflicts with installed files.
+ 

@@ -1,0 +1,23 @@
+﻿{
+    "schema":  "paper1.v5_2.oracle.mechanical.audit_gate.v1",
+    "run_id":  "paper1_v5_2mv_s002_bw04_oracle",
+    "status":  "pass",
+    "auditor_sha256":  "d81ad40e8454ccb53fa9ec643f483ca2538764259ee8c03dd3b54814d62813aa",
+    "audit_gate_sha256":  "3d7e6ed87c95857543fbf911022c61e94bfd4b7b371f4621cdc6384ed063186f",
+    "report_sha256":  "bdb0b93bf7312b10549456e7646812c24ff6e6b00ab9fbd459145b306a8e1f24",
+    "audit_log_sha256":  "51792e77faa1952a4d3eb1815aa76374fce073db5ea551bf4c6dabb9df77ad4c",
+    "runner_sha256":  "5753de4e708206d0a1f8669adc52fa74ba5e4395318a24ccfbfad6c1fceb6629",
+    "contract_sha256":  "11b20715bd970988a25429ba645373382671c8d5713cba5a836705f83b09256c",
+    "installed_trust_sha256":  "936dd373a2d8a2f0b905604ca4c3de61ec2cc889ba233aa150a24f44f2926fe6",
+    "installed_twin_sha256":  "9cd9ffaa32dcfe2f12ed161a8d62d2d97b2ab0b4d462fda0e97e7f46572043a4",
+    "feeder_sha256":  "9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d",
+    "cell_gate_record_sha256":  "e48be42d0d1a8b735bc02718d3a485eb8d4c1f962116fef14533e0c64b22bfcd",
+    "cell_gate_manifest_sha256":  "cae5b6a07227ad1ad28b6aee8da96f8faca65adf01dbf998db599fba480e36be",
+    "mechanical_gates_passed":  13,
+    "simulation_rerun":  false,
+    "implementation_modified":  false,
+    "full_campaign_authorized":  false,
+    "calibration_authorized":  false,
+    "performance_outcome_columns_read":  false,
+    "performance_outcomes_inspected":  false
+}

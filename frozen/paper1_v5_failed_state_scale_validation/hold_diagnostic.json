@@ -1,0 +1,151 @@
+{
+  "accepted_above_old_guard_count": 12505,
+  "accepted_count": 12505,
+  "accepted_fraction": 0.9473484848484849,
+  "bootstrap_accept_count": 1,
+  "bootstrap_candidate_norm": 1206.2693988158376,
+  "bootstrap_exceeds_old_guard": true,
+  "bootstrap_step_index": 0,
+  "candidate_norm_accepted_statistics": {
+    "count": 12505,
+    "maximum": 1.2601418852693484e+39,
+    "mean": 8.26466474748508e+35,
+    "median": 18485275.46603435,
+    "minimum": 78.57780703674565,
+    "p90": 6.963685277177079e+25,
+    "p99": 3.331111110754661e+33
+  },
+  "candidate_norm_jump_hold_statistics": {
+    "count": 470,
+    "maximum": 5.481970499708637e+28,
+    "mean": 8.708551115699852e+27,
+    "median": 6.032348955680784e+27,
+    "minimum": 12978.221481686332,
+    "p90": 1.8314658654757562e+28,
+    "p99": 5.481970499708637e+28
+  },
+  "eligible_before_jump_guard_count": 12975,
+  "external_support_present_fraction": 1.0,
+  "held_count": 695,
+  "held_fraction": 0.05265151515151515,
+  "hold_reason_counts": {
+    "accepted": 12504,
+    "bootstrap_accept": 1,
+    "jump_guard": 470,
+    "solve_inexact": 225
+  },
+  "jump_guard_affected_event_count": 41,
+  "jump_guard_hold_count": 470,
+  "jump_guard_maximum_consecutive_steps": 60,
+  "jump_guard_maximum_holds_in_one_event": 12,
+  "jump_guard_step_indices_first_30": [
+    732,
+    733,
+    734,
+    735,
+    736,
+    737,
+    738,
+    739,
+    740,
+    741,
+    742,
+    743,
+    780,
+    781,
+    782,
+    783,
+    784,
+    785,
+    786,
+    787,
+    788,
+    789,
+    790,
+    791,
+    1476,
+    1477,
+    1478,
+    1479,
+    1480,
+    1481
+  ],
+  "jump_limit_statistics": {
+    "count": 470,
+    "maximum": 7.284464467946242e+27,
+    "mean": 3.088768858089753e+27,
+    "median": 3.2764960991178806e+27,
+    "minimum": 10836.295448997396,
+    "p90": 6.507090294519773e+27,
+    "p99": 7.284464467946242e+27
+  },
+  "jump_norm_statistics": {
+    "count": 470,
+    "maximum": 5.4823998902025945e+28,
+    "mean": 8.70826688510278e+27,
+    "median": 6.033024447887121e+27,
+    "minimum": 12980.044277569483,
+    "p90": 1.831148146585622e+28,
+    "p99": 5.4823998902025945e+28
+  },
+  "jump_to_limit_ratio_statistics": {
+    "count": 470,
+    "maximum": 16.481606283927615,
+    "mean": 3.105592066384609,
+    "median": 1.780222835766639,
+    "minimum": 1.0748100395463986,
+    "p90": 8.5405521774182,
+    "p99": 16.312532697491296
+  },
+  "no_received_measurements_count": 0,
+  "nonfinite_candidate_hold_count": 0,
+  "old_absolute_guard_limit": 11.07925990308017,
+  "performance_outcomes_inspected": false,
+  "previous_norm_jump_hold_statistics": {
+    "count": 470,
+    "maximum": 1.4568928935892485e+26,
+    "mean": 6.177537716179506e+25,
+    "median": 6.552992198235761e+25,
+    "minimum": 216.72590897994792,
+    "p90": 1.3014180589039547e+26,
+    "p99": 1.4568928935892485e+26
+  },
+  "pseudo_only_step_count": 0,
+  "reason_external_support": {
+    "accepted": {
+      "external_received_mean": 38.265674984005116,
+      "external_received_minimum": 21.0,
+      "external_support_fraction_mean": 0.8503483329778915,
+      "pseudo_only_fraction": 0.0,
+      "steps": 12504
+    },
+    "bootstrap_accept": {
+      "external_received_mean": 37.0,
+      "external_received_minimum": 37.0,
+      "external_support_fraction_mean": 0.8222222222222222,
+      "pseudo_only_fraction": 0.0,
+      "steps": 1
+    },
+    "jump_guard": {
+      "external_received_mean": 31.706382978723404,
+      "external_received_minimum": 21.0,
+      "external_support_fraction_mean": 0.7045862884160755,
+      "pseudo_only_fraction": 0.0,
+      "steps": 470
+    },
+    "solve_inexact": {
+      "external_received_mean": 27.96,
+      "external_received_minimum": 21.0,
+      "external_support_fraction_mean": 0.6213333333333334,
+      "pseudo_only_fraction": 0.0,
+      "steps": 225
+    }
+  },
+  "run_id": "paper1_v5mv_s002_bw04_oracle",
+  "schema": "paper1.v5.oracle.hold.diagnostic.v1",
+  "solve_exact_count": 12975,
+  "solve_exact_fraction": 0.9829545454545454,
+  "solve_inexact_hold_count": 225,
+  "steps": 13200,
+  "steps_short_of_95_percent": 35
+}

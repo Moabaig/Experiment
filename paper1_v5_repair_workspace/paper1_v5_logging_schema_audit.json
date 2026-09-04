@@ -1,0 +1,652 @@
+{
+  "context_file": "/workspace/paper1_v5_repair_workspace/paper1_v5_logging_schema_context.txt",
+  "diagnostic_dicts": [
+    {
+      "function": "publish_score",
+      "keys": [
+        "schema",
+        "time",
+        "step_index",
+        "event_id",
+        "pattern_id",
+        "arm",
+        "regime",
+        "stratum",
+        "bandwidth_level",
+        "bandwidth_cap_bps",
+        "T",
+        "s",
+        "s_lmax",
+        "s_trace",
+        "r",
+        "chi2",
+        "huber",
+        "lnr",
+        "u_lmax",
+        "u_trace",
+        "u_lmax_mean",
+        "u_trace_mean",
+        "u_lmax_delta",
+        "u_trace_delta",
+        "s_delta_lmax",
+        "s_delta_trace",
+        "T_delta_lmax",
+        "alarm_delta_lmax",
+        "sB1",
+        "sB2",
+        "s_gated_lmax",
+        "s_gated_trace",
+        "b1",
+        "b2",
+        "n_rx",
+        "n_rx_telemetry",
+        "held",
+        "solve_exact",
+        "floor_kind",
+        "loss_quantile"
+      ],
+      "line_end": 1098,
+      "line_start": 1057
+    },
+    {
+      "function": "update",
+      "keys": [
+        "time",
+        "step_index",
+        "event_id",
+        "step_in_event",
+        "pattern_id",
+        "arm",
+        "regime",
+        "stratum",
+        "bandwidth_level",
+        "bandwidth_cap_bps",
+        "r",
+        "chi2",
+        "huber",
+        "lnr",
+        "u_lmax",
+        "u_trace",
+        "u_lmax_mean",
+        "u_trace_mean",
+        "u_lmax_delta",
+        "u_trace_delta",
+        "s_lmax",
+        "s_trace",
+        "s_delta_lmax",
+        "s_delta_trace",
+        "T_delta_lmax",
+        "alarm_delta_lmax",
+        "s",
+        "T",
+        "alarm",
+        "sB1",
+        "sB2",
+        "s_gated_lmax",
+        "s_gated_trace",
+        "b1",
+        "b2",
+        "n_rx",
+        "n_rx_telemetry",
+        "cached_telemetry",
+        "new_telemetry",
+        "held",
+        "solve_exact",
+        "residual_available",
+        "mean_age_telemetry",
+        "max_age_telemetry",
+        "lam_min",
+        "lam_min_mean",
+        "lam_min_delta",
+        "trace_inverse",
+        "floor_kind",
+        "floor_deflation",
+        "loss_quantile",
+        "delta_floor_kind",
+        "delta_floor_deflation",
+        "delta_loss_quantile"
+      ],
+      "line_end": 862,
+      "line_start": 793
+    },
+    {
+      "function": "aggregate_events",
+      "keys": [
+        "event_id",
+        "pattern_id",
+        "arm",
+        "regime",
+        "stratum",
+        "bandwidth_level",
+        "bandwidth_cap_bps",
+        "T",
+        "alarm",
+        "alarm_delta_lmax",
+        "b1",
+        "n_rx",
+        "n_rx_telemetry",
+        "held",
+        "held_any",
+        "residual_available",
+        "steps"
+      ],
+      "line_end": 916,
+      "line_start": 898
+    }
+  ],
+  "event_column_count": 40,
+  "event_columns": [
+    {
+      "name": "event_id",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "pattern_id",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "arm",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "name": "regime",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "name": "stratum",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "bandwidth_level",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "name": "bandwidth_cap_bps",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "T",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "alarm",
+      "nullable": true,
+      "type": "bool"
+    },
+    {
+      "name": "alarm_delta_lmax",
+      "nullable": true,
+      "type": "bool"
+    },
+    {
+      "name": "b1",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "n_rx",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "n_rx_telemetry",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "held",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "held_any",
+      "nullable": true,
+      "type": "bool"
+    },
+    {
+      "name": "residual_available",
+      "nullable": true,
+      "type": "bool"
+    },
+    {
+      "name": "steps",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "s",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "s_lmax",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "s_trace",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "r",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "chi2",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "huber",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "lnr",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "u_lmax",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "u_trace",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "u_lmax_mean",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "u_trace_mean",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "u_lmax_delta",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "u_trace_delta",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "sB1",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "sB2",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "s_gated_lmax",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "s_gated_trace",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "s_delta_lmax",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "s_delta_trace",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "T_delta_lmax",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "b2",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "mean_age_telemetry",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "max_age_telemetry",
+      "nullable": true,
+      "type": "double"
+    }
+  ],
+  "event_schema_reference": "/workspace/runs/paper1_s002_bw01_10kbps/twin/scores_events.parquet",
+  "performance_outcomes_inspected": false,
+  "schema": "paper1.v5.logging.schema.audit.v1",
+  "schema_only_inspection": true,
+  "source": "/workspace/paper1_v5_repair_workspace/twin_fed.paper1.v5.candidate.py",
+  "source_occurrences": {
+    "aggregation": [],
+    "dataframe": [
+      921,
+      1563,
+      1619,
+      1642
+    ],
+    "event_output": [
+      1446,
+      1566
+    ],
+    "groupby": [
+      896
+    ],
+    "held_key": [
+      847,
+      912,
+      1094
+    ],
+    "rows_append": [
+      920,
+      1539
+    ],
+    "solve_exact_key": [
+      848,
+      1095
+    ],
+    "to_parquet": [
+      225
+    ]
+  },
+  "source_sha256": "2acf045573858ba283c267738a288b2b1aaf77bcc50f7f2303b5928ef3c9f5f8",
+  "step_column_count": 54,
+  "step_columns": [
+    {
+      "name": "time",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "step_index",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "event_id",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "step_in_event",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "pattern_id",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "arm",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "name": "regime",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "name": "stratum",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "bandwidth_level",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "name": "bandwidth_cap_bps",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "r",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "chi2",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "huber",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "lnr",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "u_lmax",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "u_trace",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "u_lmax_mean",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "u_trace_mean",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "u_lmax_delta",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "u_trace_delta",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "s_lmax",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "s_trace",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "s_delta_lmax",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "s_delta_trace",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "T_delta_lmax",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "alarm_delta_lmax",
+      "nullable": true,
+      "type": "bool"
+    },
+    {
+      "name": "s",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "T",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "alarm",
+      "nullable": true,
+      "type": "bool"
+    },
+    {
+      "name": "sB1",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "sB2",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "s_gated_lmax",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "s_gated_trace",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "b1",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "b2",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "n_rx",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "n_rx_telemetry",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "cached_telemetry",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "new_telemetry",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "held",
+      "nullable": true,
+      "type": "bool"
+    },
+    {
+      "name": "solve_exact",
+      "nullable": true,
+      "type": "bool"
+    },
+    {
+      "name": "residual_available",
+      "nullable": true,
+      "type": "bool"
+    },
+    {
+      "name": "mean_age_telemetry",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "max_age_telemetry",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "lam_min",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "lam_min_mean",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "lam_min_delta",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "trace_inverse",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "floor_kind",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "name": "floor_deflation",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "loss_quantile",
+      "nullable": true,
+      "type": "int64"
+    },
+    {
+      "name": "delta_floor_kind",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "name": "delta_floor_deflation",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "name": "delta_loss_quantile",
+      "nullable": true,
+      "type": "int64"
+    }
+  ],
+  "step_schema_reference": "/workspace/runs/paper1_s002_bw01_10kbps/twin/scores.parquet"
+}

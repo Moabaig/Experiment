@@ -1,0 +1,10 @@
+{
+    "schema":  "paper1.v5_2.mechanical.implementation.v1",
+    "trust_metric_sha256":  "936dd373a2d8a2f0b905604ca4c3de61ec2cc889ba233aa150a24f44f2926fe6",
+    "twin_fed_sha256":  "9cd9ffaa32dcfe2f12ed161a8d62d2d97b2ab0b4d462fda0e97e7f46572043a4",
+    "solver":  "q_prior_innovation_after_measurement_bootstrap",
+    "normal_equations_used":  false,
+    "jump_guard_policy":  "q_process_mahalanobis",
+    "full_campaign_authorized":  false,
+    "performance_outcomes_inspected":  false
+}

@@ -1,0 +1,17 @@
+schema=oracle.gamma.selection.v2
+run_id=gamma_v2_pilot_001
+truth_file=truth.calibration.v2.npz
+truth_sha256=f83ca336d4ab69756214fc7649d18a6a5aff8555e3df1ca34db6230c56b1bd8a
+weight_definition=identity_matrix_491_by_491
+weight_sha256=451d751207e27b194e4fc42e4c23c862ba6399caa83e2fd8cbc5db78dcaa728f
+source_split=calibration_only
+source_table=runs/gamma_v2_pilot_001/oracle/oracle_events.parquet
+eligible_events=is_nominal_true_and_regime_ample
+statistic=event_level_maximum_oracle_d
+quantile=0.99
+quantile_method=higher
+target_nominal_ample_event_far=0.01
+evaluation_data_used=false
+pilot_gamma=1.0
+pilot_labels_used=false
+declared_utc=2026-08-29T06:25:13.6421391Z

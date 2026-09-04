@@ -1,0 +1,25 @@
+{
+  "schema": "net.run.meta.v1",
+  "status": "complete",
+  "events": 1100,
+  "pattern_channels": 583,
+  "telemetry_channels": 45,
+  "time_step": 1,
+  "helics_time_delta": 9.9999999999999995e-07,
+  "stage_offset": 9.9999999999999995e-07,
+  "stop_time": 24,
+  "tail_time": 30,
+  "b_min": 1,
+  "seed": 2001,
+  "run": 1,
+  "counts": {
+    "received": 1080,
+    "delivered": 888,
+    "dropped_random": 0,
+    "dropped_starved": 192,
+    "dropped_queue": 0,
+    "malformed": 0,
+    "bytes_received": 146640,
+    "bytes_delivered": 120630
+  }
+}

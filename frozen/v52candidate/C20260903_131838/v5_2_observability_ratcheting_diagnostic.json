@@ -1,0 +1,289 @@
+{
+  "classification": {
+    "accepted_updates_reanchor_pseudo_measurements": true,
+    "fixed_jump_guard_is_not_a_process_prior": true,
+    "mechanism": "network-supported WLS updates weak state directions; accepted sub-limit updates become the next pseudo-measurement anchor and can accumulate as state-scale ratcheting",
+    "numerical_full_rank_is_not_physical_reliability": true,
+    "pseudo_design_is_rank_deficient": true
+  },
+  "input_sha256": {
+    "feeder_npz": "9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d",
+    "twin_scores_parquet": "a2c8c17071792d848a564ea52ac7f6add8dc33be183231115f2387cd525132d5"
+  },
+  "observability": {
+    "pseudo_null_residual_frobenius": 2.3573527510035142e-06,
+    "telemetry_on_pseudo_null_condition": 1.0051363176245136,
+    "telemetry_on_pseudo_null_singular_values": [
+      141.78445423748312,
+      141.0599256552276
+    ],
+    "weighted_full_gamma_one": {
+      "columns": 491,
+      "condition": 66348.53758938248,
+      "five_smallest_singular_values": [
+        6.478969385123261,
+        5.683246802076581,
+        4.830385083484002,
+        2.530792927221848,
+        2.3848877384643745
+      ],
+      "nullity": 0,
+      "rank": 491,
+      "rank_threshold": 0.0023578675651842493,
+      "rcond": 1.4901161193847656e-08,
+      "rows": 583,
+      "singular_max": 158233.81376196092,
+      "singular_min": 2.3848877384643745
+    },
+    "weighted_pseudo": {
+      "columns": 491,
+      "condition": 95183463827.70416,
+      "five_smallest_singular_values": [
+        3.7827632939940354,
+        1.9118588289726666,
+        1.4085980555609008,
+        1.6713954744304379e-06,
+        1.662392586605836e-06
+      ],
+      "nullity": 2,
+      "rank": 489,
+      "rank_threshold": 0.0023578447794115566,
+      "rcond": 1.4901161193847656e-08,
+      "rows": 538,
+      "singular_max": 158232.28463464015,
+      "singular_min": 1.662392586605836e-06
+    }
+  },
+  "physical_process_prior": {
+    "q_condition": 5909.79751202386,
+    "q_coordinate_design": {
+      "full_gamma_one": {
+        "augmented_condition": 414.61058976272216,
+        "singular_max": 414.61009017004204,
+        "singular_min": 0.00184589667104005
+      },
+      "pseudo": {
+        "augmented_condition": 414.6081697840999,
+        "singular_max": 414.60696382444064,
+        "singular_min": 6.03387834491815e-10
+      }
+    },
+    "q_eigenvalue_max": 0.0007785028595447724,
+    "q_eigenvalue_min": 1.3173088552710287e-07,
+    "q_nullspace_eigenvalues": [
+      1.3175000049536453e-07,
+      1.321765671540866e-07
+    ],
+    "q_positive_definite": true,
+    "q_rms_increment": 0.03596661362814668
+  },
+  "run_id": "paper1_v5_1mv_s002_bw04_oracle",
+  "run_mechanics": {
+    "accepted_count": 3288,
+    "accepted_moves_away_from_bootstrap_count": 2332,
+    "accepted_moves_toward_bootstrap_count": 956,
+    "accepted_negative_norm_increment_sum": -863.2966825688211,
+    "accepted_positive_norm_increment_sum": 1536.4479829270617,
+    "bootstrap_norm": 23.82046228511704,
+    "bootstrap_position": 12,
+    "bootstrap_step_index": 12,
+    "by_hold_reason": {
+      "accepted": {
+        "candidate_norm": {
+          "count": 3287,
+          "maximum": 707.816116473762,
+          "median": 307.7775074468032,
+          "minimum": 28.498267932951187,
+          "p90": 609.1693236575021,
+          "p99": 699.3765969072446
+        },
+        "condition": {
+          "count": 3287,
+          "maximum": 111235.24761490228,
+          "median": 75351.3090867202,
+          "minimum": 66357.13694145589,
+          "p90": 93638.12607552938,
+          "p99": 95784.12504830568
+        },
+        "count": 3287,
+        "jump_norm": {
+          "count": 3287,
+          "maximum": 21.29498157732609,
+          "median": 0.7925505866237,
+          "minimum": 0.0537696717458294,
+          "p90": 1.8685930212898818,
+          "p99": 4.66238521092498
+        }
+      },
+      "bootstrap_accept": {
+        "candidate_norm": {
+          "count": 1,
+          "maximum": 23.82046228511704,
+          "median": 23.82046228511704,
+          "minimum": 23.82046228511704,
+          "p90": 23.82046228511704,
+          "p99": 23.82046228511704
+        },
+        "condition": {
+          "count": 1,
+          "maximum": 66708.31608612924,
+          "median": 66708.31608612924,
+          "minimum": 66708.31608612924,
+          "p90": 66708.31608612924,
+          "p99": 66708.31608612924
+        },
+        "count": 1,
+        "jump_norm": {
+          "count": 0,
+          "maximum": null,
+          "median": null,
+          "minimum": null,
+          "p90": null,
+          "p99": null
+        }
+      },
+      "jump_guard": {
+        "candidate_norm": {
+          "count": 6948,
+          "maximum": 416.70584864722787,
+          "median": 384.8562222855701,
+          "minimum": 126.77761139104209,
+          "p90": 415.00654864998774,
+          "p99": 416.32558720910055
+        },
+        "condition": {
+          "count": 6948,
+          "maximum": 81293.4603255742,
+          "median": 66401.05515389256,
+          "minimum": 66360.8625957494,
+          "p90": 66475.55570717406,
+          "p99": 75388.8633518543
+        },
+        "count": 6948,
+        "jump_norm": {
+          "count": 6948,
+          "maximum": 91.62959760556784,
+          "median": 59.38582254055768,
+          "minimum": 24.863797791330736,
+          "p90": 88.70147181593406,
+          "p99": 90.34347766726516
+        }
+      },
+      "solve_inexact": {
+        "candidate_norm": {
+          "count": 2964,
+          "maximum": 708.2022051114542,
+          "median": 416.6543233594765,
+          "minimum": 23.463875597017285,
+          "p90": 656.3734715656979,
+          "p99": 706.0832808512666
+        },
+        "condition": {
+          "count": 2964,
+          "maximum": 95184388760.67145,
+          "median": 95183735642.5347,
+          "minimum": 94756853724.25484,
+          "p90": 95184384284.78824,
+          "p99": 95184387649.26935
+        },
+        "count": 2964,
+        "jump_norm": {
+          "count": 2952,
+          "maximum": 100.94090174574124,
+          "median": 39.25888001986257,
+          "minimum": 1.3115436203644613,
+          "p90": 54.97147700364285,
+          "p99": 100.83759566439137
+        }
+      }
+    },
+    "first_previous_norm_crossing_step": {
+      "10": 1090,
+      "2": 18,
+      "20": 8135,
+      "5": 32
+    },
+    "fixed_jump_limit": 22.15851980616034,
+    "held_count": 9912,
+    "hold_reason_counts": {
+      "accepted": 3287,
+      "bootstrap_accept": 1,
+      "jump_guard": 6948,
+      "solve_inexact": 2964
+    },
+    "jump_limit_to_q_rms_ratio": 616.0857965460381,
+    "log_condition_candidate_ratio_correlation": 0.4863328377273371,
+    "maximum_consecutive_accepted_steps": 396,
+    "maximum_consecutive_jump_guard_steps": 768,
+    "model_increment_scale": 0.4431703961232068,
+    "model_increment_scale_to_q_rms_ratio": 12.321715930920764,
+    "reliable_candidate_to_bootstrap_ratio": {
+      "count": 10236,
+      "maximum": 29.714625518246287,
+      "median": 16.048694778691313,
+      "minimum": 1.0,
+      "p90": 19.185987459880415,
+      "p99": 28.30385719844484
+    },
+    "reliable_count": 10236,
+    "steps": 13200,
+    "transition_mismatch_count": 0
+  },
+  "schema": "paper1.v5_2.observability_ratcheting_diagnostic.v1",
+  "scope": {
+    "columns_read": [
+      "step_index",
+      "event_id",
+      "step_in_event",
+      "held",
+      "solve_exact",
+      "estimator_reliable",
+      "estimator_solver",
+      "estimator_rcond",
+      "estimator_effective_rows",
+      "estimator_rank",
+      "estimator_condition",
+      "estimator_singular_max",
+      "estimator_singular_min",
+      "estimator_residual_norm",
+      "hold_reason",
+      "state_update_accepted_step",
+      "bootstrap_accept_step",
+      "solve_inexact_hold_step",
+      "nonfinite_candidate_hold_step",
+      "jump_guard_hold_step",
+      "candidate_norm",
+      "previous_norm",
+      "jump_norm",
+      "jump_limit",
+      "jump_guard_policy",
+      "model_increment_scale",
+      "external_received_count",
+      "external_total",
+      "external_support_fraction",
+      "pseudo_received_count",
+      "pseudo_only_step",
+      "external_support_present_step",
+      "no_received_measurements_step",
+      "mean_age_telemetry",
+      "max_age_telemetry"
+    ],
+    "implementation_modified": false,
+    "performance_outcome_columns_read": false,
+    "performance_outcomes_inspected": false,
+    "simulation_rerun": false
+  },
+  "v5_2_design_decision": {
+    "bootstrap": "first measurement-full-rank reliable unregularized solve",
+    "jump_guard_role": "secondary_nonfinite_and_catastrophic_safety_check",
+    "measurement_rank_logged_separately": true,
+    "normal_equations": false,
+    "post_bootstrap_objective": "minimize ||W(H L_Q u - (z - H x_previous))||_2^2 + ||u||_2^2",
+    "post_bootstrap_parameterization": "x_candidate = x_previous + L_Q @ u",
+    "posterior_solver_reliability_logged_separately": true,
+    "prior_center": "x_previous",
+    "prior_covariance": "Q at dt=1 second",
+    "solver": "direct_augmented_lstsq_svd",
+    "tuning_from_performance_outcomes": false
+  }
+}

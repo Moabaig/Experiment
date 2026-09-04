@@ -1,0 +1,28 @@
+ Container real_experiment_bundle-dev-run-ca1237db5456 Creating 
+ Container real_experiment_bundle-dev-run-ca1237db5456 Created 
+reliable_bootstrap_accept PASS
+fixed_jump_limit_value PASS
+fixed_guard_policy_logged PASS
+small_increment_accepted PASS
+large_increment_rejected PASS
+guard_does_not_expand_with_previous_norm PASS
+unreliable_solver_rejected PASS
+nonfinite_candidate_rejected PASS
+solver_name_logged PASS
+solver_rank_logged PASS
+step_schema_complete PASS
+publication_schema_complete PASS
+event_schema_complete PASS
+event_reliable_fraction_correct PASS
+event_rank_min_correct PASS
+event_condition_max_correct PASS
+event_guard_policy_correct PASS
+PAPER1_V5_1_TWIN_GUARD_LOGGING_TESTS_OK
+TESTS_PASSED= 17
+TESTS_FAILED=0
+FIXED_JUMP_LIMIT= 22.15851980616034
+JUMP_GUARD_POLICY=fixed_model_increment
+STEP_FIELDS_VERIFIED= 11
+EVENT_FIELDS_VERIFIED= 13
+LIVE_FILES_MODIFIED=False
+PERFORMANCE_OUTCOMES_INSPECTED=False

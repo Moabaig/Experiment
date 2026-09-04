@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/twin.calibration.v1.schema.json",
+  "title": "Frozen digital-twin calibration",
+  "type": "object",
+  "required": [
+    "schema",
+    "normalizers",
+    "threshold",
+    "hybrid_calibration",
+    "sources"
+  ],
+  "properties": {
+    "schema": {"const": "twin.calibration.v1"},
+    "normalizers": {
+      "type": "object",
+      "required": ["r0", "u0_lmax", "u0_trace"],
+      "properties": {
+        "r0": {"type": "number", "exclusiveMinimum": 0},
+        "u0_lmax": {"type": "number", "exclusiveMinimum": 0},
+        "u0_trace": {"type": "number", "exclusiveMinimum": 0}
+      },
+      "additionalProperties": true
+    },
+    "threshold": {
+      "type": "object",
+      "required": ["T_th", "target_far", "scalarization"],
+      "properties": {
+        "T_th": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1},
+        "target_far": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1},
+        "scalarization": {"enum": ["lmax", "trace"]}
+      },
+      "additionalProperties": true
+    },
+    "hybrid_calibration": {
+      "type": "object",
+      "required": ["beta1", "beta2"],
+      "properties": {
+        "beta1": {"type": "number", "minimum": 0},
+        "beta2": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": true
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

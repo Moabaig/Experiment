@@ -1,0 +1,43 @@
+{
+  "created_utc": "2026-08-29T00:54:57Z",
+  "hybrid_calibration": {
+    "auc_sB1": 0.5316223648029331,
+    "auc_sB2": 0.5798961197677971,
+    "beta1": 0.4278947843166705,
+    "beta2": 0.005250418675314772,
+    "objective": "maximize oracle calibration AUC"
+  },
+  "normalizers": {
+    "r0": 16116.40698853904,
+    "u0_lmax": 4.595434630698364e-06,
+    "u0_trace": 1.829308260924436e-05
+  },
+  "schema": "twin.calibration.v1",
+  "selection": {
+    "all_events": 1100,
+    "ample_regime": "ample",
+    "moderate_events": 105,
+    "moderate_regime": "moderate",
+    "negative_events": 1091,
+    "nominal_ample_events": 98,
+    "positive_events": 9
+  },
+  "sources": [
+    {
+      "path": "/workspace/runs/calibration_final_001/oracle/oracle_events.parquet",
+      "sha256": "eee07ac3df7d40d9a6c370be082c6172a254efe9101c8cab5ed025762162d453"
+    }
+  ],
+  "targets": {
+    "moderate_target_trust": 0.7,
+    "nominal_trust": 0.9,
+    "normalizer_quantile": 0.5
+  },
+  "threshold": {
+    "T_th": 0.0006415430277394475,
+    "realized_calibration_far": 0.0,
+    "scalarization": "lmax",
+    "score_threshold": 7.351634302518874,
+    "target_far": 0.01
+  }
+}

@@ -1,0 +1,27 @@
+{
+    "schema":  "paper1.v5_1.mechanical.validation.contract.v1",
+    "authorization_state":  "single_oracle_mechanical_cell_only",
+    "authorized_seed_indices":  [
+                                    2
+                                ],
+    "authorized_bandwidth_indices":  [
+                                         4
+                                     ],
+    "authorized_bandwidth_levels":  [
+                                        "bw04_oracle"
+                                    ],
+    "expected_run_ids":  [
+                             "paper1_v5_1mv_s002_bw04_oracle"
+                         ],
+    "source_runner_sha256":  "a2a9d19ffc94018140333f5b8fa8477ca2ec6a2ad767774caed321689b63d2e8",
+    "v5_1_runner_sha256":  "31cc460690323100fdcc10df7162db0a92d615035dbc6e9319c09d1610b1dae9",
+    "trust_metric_sha256":  "0a2627bdaacad03e582bb039eeb2fb3ac73d33d20b77e96881ebceec64aae437",
+    "twin_fed_sha256":  "39e6729af233032ab9c58851c9682252f02d36eed739eb2ec769e165659da34c",
+    "solver":  "weighted_lstsq_svd",
+    "normal_equations_used":  false,
+    "jump_guard_policy":  "fixed_model_increment",
+    "fixed_jump_limit":  22.158519806160339,
+    "full_campaign_authorized":  false,
+    "calibration_authorized":  false,
+    "performance_outcomes_inspected":  false
+}

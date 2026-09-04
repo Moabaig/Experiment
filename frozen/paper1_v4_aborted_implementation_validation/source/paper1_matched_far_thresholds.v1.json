@@ -1,0 +1,118 @@
+{
+  "alarm_rule": "score > threshold",
+  "created_utc": "2026-09-01T05:30:47.518413+00:00",
+  "event_score_construction": "max_step(metric)",
+  "implementation_revision": "exact_step_reconstruction.v2.1",
+  "population": 117,
+  "pre_campaign_correction": {
+    "calibration_changed": false,
+    "evaluation_data_used": false,
+    "method_changed": false,
+    "reason": "stored calibration-run s used the pre-calibration score scale; thresholds are reconstructed from step components with frozen normalizers"
+  },
+  "prohibitions": [
+    "do not recompute thresholds from evaluation or factor-campaign outputs",
+    "do not count abstention as a correct drift detection",
+    "do not change gamma after this file is frozen"
+  ],
+  "proposed_score_threshold_in_calibration_json": 69.04576965495076,
+  "proposed_score_threshold_recomputed": 69.04576965495076,
+  "proposed_threshold_exact_match": true,
+  "quantile": 0.99,
+  "quantile_method": "higher",
+  "schema": "paper1.matched_far.thresholds.v1",
+  "selection_mask": "is_nominal == true and regime == ample",
+  "skipped_optional_metrics": {
+    "lnr": {
+      "nonfinite_steps": 13200,
+      "reason": "column_contains_nonfinite_values",
+      "total_steps": 13200
+    }
+  },
+  "source_split": "calibration_only",
+  "sources": {
+    "calibration_json": "/workspace/calibration.v2.json",
+    "calibration_json_sha256": "175e513958464158232a4bf9c1014d0059710f2e38b0531ca9db7519ae1f0f78",
+    "oracle_events": "/workspace/runs/calibration_v2_final_001/oracle/oracle_events.parquet",
+    "oracle_events_sha256": "98f53e7ea5da6f410c68deef177f334f86ff16373f842a2ff2979d764fb5808a",
+    "oracle_scores": "/workspace/runs/calibration_v2_final_001/oracle/oracle_scores.parquet",
+    "oracle_scores_sha256": "546376204bc95998f3715a1af2c19eaadb4caa1be9960ba642def383b45d843b",
+    "twin_events": "/workspace/runs/calibration_v2_final_001/twin/scores_events.parquet",
+    "twin_events_sha256": "cce73b14ceb7111f6d8d19c7cbc943617d8614cec8169b6e4981e9ddd24f8ac7"
+  },
+  "target_far": 0.01,
+  "thresholds": {
+    "chi2": {
+      "exceedances": 1,
+      "population": 117,
+      "realized_far": 0.008547008547008548,
+      "threshold": 1729.2652310204082
+    },
+    "huber": {
+      "exceedances": 1,
+      "population": 117,
+      "realized_far": 0.008547008547008548,
+      "threshold": 11.998013633838992
+    },
+    "s": {
+      "exceedances": 1,
+      "population": 117,
+      "realized_far": 0.008547008547008548,
+      "threshold": 69.04576965495076
+    },
+    "sB1": {
+      "exceedances": 1,
+      "population": 117,
+      "realized_far": 0.008547008547008548,
+      "threshold": 0.10724555223944912
+    },
+    "sB2": {
+      "exceedances": 1,
+      "population": 117,
+      "realized_far": 0.008547008547008548,
+      "threshold": 0.10724640840937245
+    },
+    "s_gated": {
+      "exceedances": 1,
+      "population": 117,
+      "realized_far": 0.008547008547008548,
+      "threshold": 69.04345773402957
+    },
+    "s_gated_lmax": {
+      "exceedances": 1,
+      "population": 117,
+      "realized_far": 0.008547008547008548,
+      "threshold": 69.04345773402957
+    },
+    "s_gated_trace": {
+      "exceedances": 1,
+      "population": 117,
+      "realized_far": 0.008547008547008548,
+      "threshold": 8.017337329383329
+    },
+    "s_hyb_b1": {
+      "exceedances": 1,
+      "population": 117,
+      "realized_far": 0.008547008547008548,
+      "threshold": 0.10724555223944912
+    },
+    "s_hyb_b2": {
+      "exceedances": 1,
+      "population": 117,
+      "realized_far": 0.008547008547008548,
+      "threshold": 0.10724640840937245
+    },
+    "s_lmax": {
+      "exceedances": 1,
+      "population": 117,
+      "realized_far": 0.008547008547008548,
+      "threshold": 69.04576965495076
+    },
+    "s_trace": {
+      "exceedances": 1,
+      "population": 117,
+      "realized_far": 0.008547008547008548,
+      "threshold": 8.01964925030452
+    }
+  }
+}

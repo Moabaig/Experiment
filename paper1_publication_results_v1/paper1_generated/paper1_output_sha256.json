@@ -1,0 +1,14 @@
+{
+  "diagnostic_manifest.json": "1291f948a73fe7bc1ecbddd11c98bebb3012532abea11d0e85ec00e76e9214c6",
+  "figures/fig_diagnostic_age_loss_response.pdf": "1acd367074d9cfae5656470d003caf0ca83fb43a7511b17df7a96f0f8e4af1d0",
+  "figures/fig_diagnostic_age_loss_response.png": "fa21aa9f0192c184a1c960576f8d19f6ebffe7ec19981a4670676271938c8f38",
+  "figures/fig_diagnostic_channel_influence.pdf": "faac128d97a42367a6610221eed2002baf39675ba4aeda8cda2171ed90a72519",
+  "figures/fig_diagnostic_channel_influence.png": "1f0c0d8e83923e0c5b8c7ee873eca55b5262c2bf97c0752c4a2e3919a251ec77",
+  "figures/fig_diagnostic_collinearity.pdf": "a39ecdd8929c5f65fcdc1c5c9187c840ab59e218dbaaed9e04bc68f89e397bcc",
+  "figures/fig_diagnostic_collinearity.png": "333974e361030c3c698397893df52006479114db2fdfe3e4366dcbe160604a23",
+  "figures/fig_diagnostic_matched_identity.pdf": "0f41416eb635dbccc4a35f7fa177831a0d529fe51ed4f005fb1ca48b2d5b130a",
+  "figures/fig_diagnostic_matched_identity.png": "5b47b4a87f3933f952f6e44244ca2c06d5ea46d2b428b7fbd882cd18c3cecd6a",
+  "latex/paper1_diagnostic_results.tex": "836d17e31dac7f17fe460f9cf5e53406f69109d8f8e464592aa2b52c9b70ed63",
+  "latex/table_diagnostic_arm_c.tex": "90cefdcc5bf014d9863d91d3f390c1000eb666cf850a00d6536acf5a9ae47a59",
+  "tables/table_diagnostic_arm_c.csv": "91bc2f54ce86ce0e4a39521a456e997f1f1bf35795515c2e4190babb6312e52e"
+}

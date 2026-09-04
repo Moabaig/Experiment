@@ -1,0 +1,534 @@
+=== TRUSTMETRIC_ESTIMATE ===
+FILE=/workspace/paper1_v5_1_solver_repair_workspace/trust_metric.v5_1.candidate.py
+LINES=165-324
+00165:     def estimate(self, z, rx, gamma):
+00166:         """Solve the age-aware WLS problem without forming normal equations.
+00167: 
+00168:         Rows are scaled by sqrt(gamma / sigma2), and the resulting
+00169:         least-squares system is solved directly by rank-revealing SVD.
+00170:         The Boolean return value means full numerical column rank and
+00171:         a finite solution; a LAPACK call merely returning is not enough.
+00172:         """
+00173:         z_array = np.asarray(z, dtype=float).reshape(-1)
+00174:         rx_array = np.asarray(rx, dtype=bool).reshape(-1)
+00175:         gamma_array = np.asarray(gamma, dtype=float).reshape(-1)
+00176: 
+00177:         if (
+00178:             len(z_array) != self.m
+00179:             or len(rx_array) != self.m
+00180:             or len(gamma_array) != self.m
+00181:         ):
+00182:             raise ValueError(
+00183:                 "z, rx, and gamma must match the measurement dimension"
+00184:             )
+00185: 
+00186:         idx = np.flatnonzero(rx_array)
+00187:         raw_weights = gamma_array[idx] / self.s2[idx]
+00188: 
+00189:         valid = (
+00190:             np.isfinite(raw_weights)
+00191:             & (raw_weights > 0.0)
+00192:             & np.isfinite(z_array[idx])
+00193:         )
+00194: 
+00195:         idx = idx[valid]
+00196:         weights = raw_weights[valid]
+00197: 
+00198:         rcond = float(np.sqrt(np.finfo(float).eps))
+00199:         ridge = float(self.cfg.ridge)
+00200: 
+00201:         if not np.isfinite(ridge) or ridge < 0.0:
+00202:             raise ValueError(
+00203:                 "estimator ridge must be finite and nonnegative"
+00204:             )
+00205: 
+00206:         self.last_estimator_solver = "weighted_lstsq_svd"
+00207:         self.last_estimator_rcond = rcond
+00208:         self.last_estimator_effective_rows = int(len(idx))
+00209:         self.last_estimator_rank = 0
+00210:         self.last_estimator_condition = float("inf")
+00211:         self.last_estimator_singular_max = float("nan")
+00212:         self.last_estimator_singular_min = float("nan")
+00213:         self.last_estimator_residual_norm = float("nan")
+00214: 
+00215:         if len(idx) == 0:
+00216:             return np.full(self.n, np.nan), False
+00217: 
+00218:         square_root_weights = np.sqrt(weights)
+00219:         weighted_h = (
+00220:             self.H[idx]
+00221:             * square_root_weights[:, None]
+00222:         )
+00223:         weighted_z = (
+00224:             z_array[idx]
+00225:             * square_root_weights
+00226:         )
+00227: 
+00228:         if (
+00229:             not np.all(np.isfinite(weighted_h))
+00230:             or not np.all(np.isfinite(weighted_z))
+00231:         ):
+00232:             return np.full(self.n, np.nan), False
+00233: 
+00234:         if ridge > 0.0:
+00235:             weighted_h = np.vstack(
+00236:                 [
+00237:                     weighted_h,
+00238:                     np.eye(self.n) * np.sqrt(ridge),
+00239:                 ]
+00240:             )
+00241:             weighted_z = np.concatenate(
+00242:                 [
+00243:                     weighted_z,
+00244:                     np.zeros(self.n),
+00245:                 ]
+00246:             )
+00247: 
+00248:         try:
+00249:             (
+00250:                 candidate,
+00251:                 _,
+00252:                 rank,
+00253:                 singular_values,
+00254:             ) = np.linalg.lstsq(
+00255:                 weighted_h,
+00256:                 weighted_z,
+00257:                 rcond=rcond,
+00258:             )
+00259:         except np.linalg.LinAlgError:
+00260:             return np.full(self.n, np.nan), False
+00261: 
+00262:         candidate = np.asarray(
+00263:             candidate,
+00264:             dtype=float,
+00265:         ).reshape(-1)
+00266: 
+00267:         rank = int(rank)
+00268:         singular_values = np.asarray(
+00269:             singular_values,
+00270:             dtype=float,
+00271:         )
+00272: 
+00273:         if len(singular_values) > 0:
+00274:             singular_max = float(
+00275:                 singular_values[0]
+00276:             )
+00277:             singular_min = float(
+00278:                 singular_values[-1]
+00279:             )
+00280: 
+00281:             condition = (
+00282:                 float(singular_max / singular_min)
+00283:                 if singular_min > 0.0
+00284:                 else float("inf")
+00285:             )
+00286:         else:
+00287:             singular_max = float("nan")
+00288:             singular_min = float("nan")
+00289:             condition = float("inf")
+00290: 
+00291:         candidate_finite = bool(
+00292:             candidate.shape == (self.n,)
+00293:             and np.all(np.isfinite(candidate))
+00294:         )
+00295: 
+00296:         residual_norm = (
+00297:             float(
+00298:                 np.linalg.norm(
+00299:                     weighted_h @ candidate
+00300:                     - weighted_z
+00301:                 )
+00302:             )
+00303:             if candidate_finite
+00304:             else float("nan")
+00305:         )
+00306: 
+00307:         full_numerical_rank = bool(
+00308:             rank == self.n
+00309:             and np.isfinite(condition)
+00310:             and condition <= 1.0 / rcond
+00311:         )
+00312: 
+00313:         self.last_estimator_rank = rank
+00314:         self.last_estimator_condition = condition
+00315:         self.last_estimator_singular_max = singular_max
+00316:         self.last_estimator_singular_min = singular_min
+00317:         self.last_estimator_residual_norm = residual_norm
+00318: 
+00319:         solved_reliably = bool(
+00320:             candidate_finite
+00321:             and full_numerical_rank
+00322:         )
+00323: 
+00324:         return candidate, solved_reliably
+
+=== PRODUCTIONTWIN_ESTIMATE ===
+FILE=/workspace/paper1_v5_1_solver_repair_workspace/twin_fed.v5_1.candidate.py
+LINES=614-706
+00614:     def _estimate(
+00615:         self,
+00616:         z: np.ndarray,
+00617:         rx: np.ndarray,
+00618:         gamma: np.ndarray,
+00619:     ) -> tuple[np.ndarray, bool, bool]:
+00620:         candidate, solved_exactly = self.metric.estimate(z, rx, gamma)
+00621:         candidate_array = np.asarray(candidate, dtype=float)
+00622:         candidate_finite = bool(np.all(np.isfinite(candidate_array)))
+00623: 
+00624:         had_valid_estimate = bool(
+00625:             getattr(self, "has_valid_estimate", False)
+00626:         )
+00627: 
+00628:         previous_norm = float(np.linalg.norm(self.x_previous))
+00629:         state_scale = max(
+00630:             previous_norm,
+00631:             math.sqrt(self.n) * 0.01,
+00632:             1e-12,
+00633:         )
+00634:         jump_limit = float(self.hold_factor * state_scale)
+00635: 
+00636:         if candidate_finite:
+00637:             candidate_norm = float(np.linalg.norm(candidate_array))
+00638:         else:
+00639:             candidate_norm = float("nan")
+00640: 
+00641:         if had_valid_estimate and candidate_finite:
+00642:             jump_norm = float(
+00643:                 np.linalg.norm(candidate_array - self.x_previous)
+00644:             )
+00645:         else:
+00646:             jump_norm = float("nan")
+00647: 
+00648:         rx_array = np.asarray(rx, dtype=bool).reshape(-1)
+00649:         configured_telemetry = int(
+00650:             getattr(self, "n_telemetry", 0)
+00651:         )
+00652:         external_total = min(configured_telemetry, len(rx_array))
+00653:         external_received = int(
+00654:             np.count_nonzero(rx_array[:external_total])
+00655:         )
+00656:         pseudo_received = int(
+00657:             np.count_nonzero(rx_array[external_total:])
+00658:         )
+00659: 
+00660:         if external_received > 0:
+00661:             external_support_state = "external_present"
+00662:         elif pseudo_received > 0:
+00663:             external_support_state = "pseudo_only"
+00664:         else:
+00665:             external_support_state = "no_received_measurements"
+00666: 
+00667:         if not solved_exactly:
+00668:             decision_reason = "solve_inexact"
+00669:             held = True
+00670:         elif not candidate_finite:
+00671:             decision_reason = "nonfinite_candidate"
+00672:             held = True
+00673:         elif not had_valid_estimate:
+00674:             decision_reason = "bootstrap_accept"
+00675:             held = False
+00676:         elif jump_norm > jump_limit:
+00677:             decision_reason = "jump_guard"
+00678:             held = True
+00679:         else:
+00680:             decision_reason = "accepted"
+00681:             held = False
+00682: 
+00683:         self.last_hold_reason = decision_reason
+00684:         self.last_candidate_norm = candidate_norm
+00685:         self.last_previous_norm = previous_norm
+00686:         self.last_jump_norm = jump_norm
+00687:         self.last_jump_limit = jump_limit
+00688:         self.last_candidate_finite = candidate_finite
+00689:         self.last_solved_exactly = bool(solved_exactly)
+00690:         self.last_external_received_count = external_received
+00691:         self.last_external_total = external_total
+00692:         self.last_pseudo_received_count = pseudo_received
+00693:         self.last_external_support_state = external_support_state
+00694:         self.last_pseudo_only = external_support_state == "pseudo_only"
+00695:         self.last_external_support_fraction = (
+00696:             float(external_received / external_total)
+00697:             if external_total > 0
+00698:             else 0.0
+00699:         )
+00700: 
+00701:         if held:
+00702:             return self.x_previous.copy(), True, solved_exactly
+00703: 
+00704:         self.x_previous = candidate_array.copy()
+00705:         self.has_valid_estimate = True
+00706:         return self.x_previous.copy(), False, solved_exactly
+
+=== STEP_ROW_DICTIONARY ===
+FILE=/workspace/paper1_v5_1_solver_repair_workspace/twin_fed.v5_1.candidate.py
+LINES=793-882
+00793:         row: dict[str, Any] = {
+00794:             "time": float(logical_time),
+00795:             "step_index": int(step_index),
+00796:             "event_id": int(event_id),
+00797:             "step_in_event": int(step_index % steps_per_event),
+00798:             "pattern_id": int(event_id),
+00799:             "arm": None if pd.isna(scenario.get("arm")) else str(scenario.get("arm")),
+00800:             "regime": None
+00801:             if pd.isna(scenario.get("regime"))
+00802:             else str(scenario.get("regime")),
+00803:             "stratum": None
+00804:             if pd.isna(scenario.get("stratum"))
+00805:             else int(scenario.get("stratum")),
+00806:             "bandwidth_level": self.bandwidth_level,
+00807:             "bandwidth_cap_bps": self.bandwidth_cap_bps,
+00808:             "r": r,
+00809:             "chi2": residual["chi2"],
+00810:             "huber": residual["huber"],
+00811:             "lnr": residual["lnr"],
+00812:             "u_lmax": exposure["u_lmax"],
+00813:             "u_trace": exposure["u_trace"],
+00814:             "u_lmax_mean": exposure["u_lmax_mean"],
+00815:             "u_trace_mean": exposure["u_trace_mean"],
+00816:             "u_lmax_delta": exposure["u_lmax_delta"],
+00817:             "u_trace_delta": exposure["u_trace_delta"],
+00818:             "s_lmax": s_lmax,
+00819:             "s_trace": s_trace,
+00820:             "s_delta_lmax": s_delta_lmax,
+00821:             "s_delta_trace": s_delta_trace,
+00822:             "T_delta_lmax": float("nan")
+00823:             if not math.isfinite(s_delta_lmax)
+00824:             else float(math.exp(-min(s_delta_lmax, 745.0))),
+00825:             "alarm_delta_lmax": False
+00826:             if not math.isfinite(s_delta_lmax)
+00827:             else bool(
+00828:                 s_delta_lmax > math.log(1.0 / self.metric.cfg.T_th)
+00829:             ),
+00830:             "s": active_s,
+00831:             "T": float(math.exp(-min(active_s, 745.0))),
+00832:             "alarm": bool(active_s > math.log(1.0 / self.metric.cfg.T_th)),
+00833:             "sB1": r / self.metric.cfg.r0 + self.beta1 * (1.0 - b1),
+00834:             "sB2": r / self.metric.cfg.r0 + self.beta2 * b2,
+00835:             "s_gated_lmax": b1 * r / self.metric.cfg.r0
+00836:             + exposure["u_lmax"] / self.metric.cfg.u0_lmax,
+00837:             "s_gated_trace": float("nan")
+00838:             if not math.isfinite(exposure["u_trace"])
+00839:             else b1 * r / self.metric.cfg.r0
+00840:             + exposure["u_trace"] / self.metric.cfg.u0_trace,
+00841:             "b1": b1,
+00842:             "b2": b2,
+00843:             "n_rx": int(rx.sum()),
+00844:             "n_rx_telemetry": int(rx[: self.n_telemetry].sum()),
+00845:             "cached_telemetry": int(sum(sample is not None for sample in self.samples)),
+00846:             "new_telemetry": int(self.new_since_update),
+00847:             "held": bool(held),
+00848:             "solve_exact": bool(solved_exactly),
+00849:             "hold_reason": self.last_hold_reason,
+00850:             "state_update_accepted_step": not bool(held),
+00851:             "bootstrap_accept_step": self.last_hold_reason == "bootstrap_accept",
+00852:             "solve_inexact_hold_step": self.last_hold_reason == "solve_inexact",
+00853:             "nonfinite_candidate_hold_step": self.last_hold_reason == "nonfinite_candidate",
+00854:             "jump_guard_hold_step": self.last_hold_reason == "jump_guard",
+00855:             "candidate_norm": self.last_candidate_norm,
+00856:             "previous_norm": self.last_previous_norm,
+00857:             "jump_norm": self.last_jump_norm,
+00858:             "jump_limit": self.last_jump_limit,
+00859:             "external_received_count": self.last_external_received_count,
+00860:             "external_total": self.last_external_total,
+00861:             "external_support_fraction": self.last_external_support_fraction,
+00862:             "pseudo_received_count": self.last_pseudo_received_count,
+00863:             "pseudo_only_step": self.last_pseudo_only,
+00864:             "external_support_present_step": self.last_external_received_count > 0,
+00865:             "no_received_measurements_step": (
+00866:                 self.last_external_received_count == 0
+00867:                 and self.last_pseudo_received_count == 0
+00868:             ),
+00869:             "residual_available": bool(np.any(rx & (gamma > 0.0))),
+00870:             "mean_age_telemetry": b2,
+00871:             "max_age_telemetry": float(np.max(age[: self.n_telemetry])),
+00872:             "lam_min": exposure["lam_min"],
+00873:             "lam_min_mean": exposure["lam_min_mean"],
+00874:             "lam_min_delta": exposure["lam_min_delta"],
+00875:             "trace_inverse": exposure["trace_inverse"],
+00876:             "floor_kind": exposure["floor_kind"],
+00877:             "floor_deflation": exposure["floor_deflation"],
+00878:             "loss_quantile": int(exposure["loss_quantile"]),
+00879:             "delta_floor_kind": exposure["delta_floor_kind"],
+00880:             "delta_floor_deflation": exposure["delta_floor_deflation"],
+00881:             "delta_loss_quantile": int(exposure["delta_loss_quantile"]),
+00882:         }
+
+=== PUBLICATION_PAYLOAD ===
+FILE=/workspace/paper1_v5_1_solver_repair_workspace/twin_fed.v5_1.candidate.py
+LINES=1133-1191
+01133:     payload: dict[str, Any] = {
+01134:         "schema": SCORE_SCHEMA,
+01135:         "time": row["time"],
+01136:         "step_index": row["step_index"],
+01137:         "event_id": row["event_id"],
+01138:         "pattern_id": row["pattern_id"],
+01139:         "arm": row["arm"],
+01140:         "regime": row["regime"],
+01141:         "stratum": row["stratum"],
+01142:         "bandwidth_level": row["bandwidth_level"],
+01143:         "bandwidth_cap_bps": row["bandwidth_cap_bps"],
+01144:         "T": row["T"],
+01145:         "s": row["s"],
+01146:         "s_lmax": row["s_lmax"],
+01147:         "s_trace": row["s_trace"],
+01148:         "r": row["r"],
+01149:         "chi2": row["chi2"],
+01150:         "huber": row["huber"],
+01151:         "lnr": row["lnr"],
+01152:         "u_lmax": row["u_lmax"],
+01153:         "u_trace": row["u_trace"],
+01154:         "u_lmax_mean": row["u_lmax_mean"],
+01155:         "u_trace_mean": row["u_trace_mean"],
+01156:         "u_lmax_delta": row["u_lmax_delta"],
+01157:         "u_trace_delta": row["u_trace_delta"],
+01158:         "s_delta_lmax": row["s_delta_lmax"],
+01159:         "s_delta_trace": row["s_delta_trace"],
+01160:         "T_delta_lmax": row["T_delta_lmax"],
+01161:         "alarm_delta_lmax": row["alarm_delta_lmax"],
+01162:         "sB1": row["sB1"],
+01163:         "sB2": row["sB2"],
+01164:         "s_gated_lmax": row["s_gated_lmax"],
+01165:         "s_gated_trace": row["s_gated_trace"],
+01166:         "b1": row["b1"],
+01167:         "b2": row["b2"],
+01168:         "n_rx": row["n_rx"],
+01169:         "n_rx_telemetry": row["n_rx_telemetry"],
+01170:         "held": row["held"],
+01171:         "solve_exact": row["solve_exact"],
+01172:         "hold_reason": row["hold_reason"],
+01173:         "state_update_accepted_step": row["state_update_accepted_step"],
+01174:         "bootstrap_accept_step": row["bootstrap_accept_step"],
+01175:         "solve_inexact_hold_step": row["solve_inexact_hold_step"],
+01176:         "nonfinite_candidate_hold_step": row["nonfinite_candidate_hold_step"],
+01177:         "jump_guard_hold_step": row["jump_guard_hold_step"],
+01178:         "candidate_norm": row["candidate_norm"],
+01179:         "previous_norm": row["previous_norm"],
+01180:         "jump_norm": row["jump_norm"],
+01181:         "jump_limit": row["jump_limit"],
+01182:         "external_received_count": row["external_received_count"],
+01183:         "external_total": row["external_total"],
+01184:         "external_support_fraction": row["external_support_fraction"],
+01185:         "pseudo_received_count": row["pseudo_received_count"],
+01186:         "pseudo_only_step": row["pseudo_only_step"],
+01187:         "external_support_present_step": row["external_support_present_step"],
+01188:         "no_received_measurements_step": row["no_received_measurements_step"],
+01189:         "floor_kind": row["floor_kind"],
+01190:         "loss_quantile": row["loss_quantile"],
+01191:     }
+
+=== MAX_EVENT_COLUMNS ===
+FILE=/workspace/paper1_v5_1_solver_repair_workspace/twin_fed.v5_1.candidate.py
+LINES=887-911
+00887: MAX_EVENT_COLUMNS = (
+00888:     "s",
+00889:     "s_lmax",
+00890:     "s_trace",
+00891:     "r",
+00892:     "chi2",
+00893:     "huber",
+00894:     "lnr",
+00895:     "u_lmax",
+00896:     "u_trace",
+00897:     "u_lmax_mean",
+00898:     "u_trace_mean",
+00899:     "u_lmax_delta",
+00900:     "u_trace_delta",
+00901:     "sB1",
+00902:     "sB2",
+00903:     "s_gated_lmax",
+00904:     "s_gated_trace",
+00905:     "s_delta_lmax",
+00906:     "s_delta_trace",
+00907:     "T_delta_lmax",
+00908:     "b2",
+00909:     "mean_age_telemetry",
+00910:     "max_age_telemetry",
+00911: )
+
+=== EVENT_AGGREGATION ===
+FILE=/workspace/paper1_v5_1_solver_repair_workspace/twin_fed.v5_1.candidate.py
+LINES=914-997
+00914: def aggregate_events(scores: pd.DataFrame) -> pd.DataFrame:
+00915:     rows: list[dict[str, Any]] = []
+00916:     for _, block in scores.groupby("event_id", sort=True):
+00917:         first = block.iloc[0]
+00918:         row: dict[str, Any] = {
+00919:             "event_id": int(first["event_id"]),
+00920:             "pattern_id": int(first["pattern_id"]),
+00921:             "arm": first["arm"],
+00922:             "regime": first["regime"],
+00923:             "stratum": first["stratum"],
+00924:             "bandwidth_level": first["bandwidth_level"],
+00925:             "bandwidth_cap_bps": float(first["bandwidth_cap_bps"]),
+00926:             "T": float(block["T"].min()),
+00927:             "alarm": bool(block["alarm"].any()),
+00928:             "alarm_delta_lmax": bool(block["alarm_delta_lmax"].any()),
+00929:             "b1": float(block["b1"].min()),
+00930:             "n_rx": int(block["n_rx"].min()),
+00931:             "n_rx_telemetry": int(block["n_rx_telemetry"].min()),
+00932:             "held": float(block["held"].mean()),
+00933:             "held_any": bool(block["held"].any()),
+00934:             "solve_exact_fraction": float(block["solve_exact"].mean()),
+00935:             "solve_exact_all": bool(block["solve_exact"].all()),
+00936:             "state_update_accepted_fraction": float(
+00937:                 block["state_update_accepted_step"].mean()
+00938:             ),
+00939:             "bootstrap_accept_fraction": float(
+00940:                 block["bootstrap_accept_step"].mean()
+00941:             ),
+00942:             "solve_inexact_hold_fraction": float(
+00943:                 block["solve_inexact_hold_step"].mean()
+00944:             ),
+00945:             "nonfinite_candidate_hold_fraction": float(
+00946:                 block["nonfinite_candidate_hold_step"].mean()
+00947:             ),
+00948:             "jump_guard_hold_fraction": float(
+00949:                 block["jump_guard_hold_step"].mean()
+00950:             ),
+00951:             "pseudo_only_fraction": float(
+00952:                 block["pseudo_only_step"].mean()
+00953:             ),
+00954:             "external_support_present_fraction": float(
+00955:                 block["external_support_present_step"].mean()
+00956:             ),
+00957:             "no_received_measurements_fraction": float(
+00958:                 block["no_received_measurements_step"].mean()
+00959:             ),
+00960:             "candidate_norm_max": float(
+00961:                 pd.to_numeric(
+00962:                     block["candidate_norm"], errors="coerce"
+00963:                 ).max()
+00964:             ),
+00965:             "previous_norm_max": float(
+00966:                 pd.to_numeric(
+00967:                     block["previous_norm"], errors="coerce"
+00968:                 ).max()
+00969:             ),
+00970:             "jump_norm_max": float(
+00971:                 pd.to_numeric(
+00972:                     block["jump_norm"], errors="coerce"
+00973:                 ).max()
+00974:             ),
+00975:             "jump_limit_min": float(
+00976:                 pd.to_numeric(
+00977:                     block["jump_limit"], errors="coerce"
+00978:                 ).min()
+00979:             ),
+00980:             "external_received_count_min": int(
+00981:                 block["external_received_count"].min()
+00982:             ),
+00983:             "external_total": int(block["external_total"].iloc[0]),
+00984:             "external_support_fraction_min": float(
+00985:                 block["external_support_fraction"].min()
+00986:             ),
+00987:             "pseudo_received_count_max": int(
+00988:                 block["pseudo_received_count"].max()
+00989:             ),
+00990:             "residual_available": bool(block["residual_available"].any()),
+00991:             "steps": int(len(block)),
+00992:         }
+00993:         for column in MAX_EVENT_COLUMNS:
+00994:             values = pd.to_numeric(block[column], errors="coerce").to_numpy(float)
+00995:             row[column] = float(np.nanmax(values)) if np.any(np.isfinite(values)) else float("nan")
+00996:         rows.append(row)
+00997:     return pd.DataFrame(rows)

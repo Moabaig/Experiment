@@ -1,0 +1,29 @@
+=== TRUSTMETRIC.ESTIMATE ===
+00161:         f_quant = np.maximum(self._spectrum(gamma) - Lam, 0.0)
+00162:         return np.maximum(f_bern, f_quant)                      # combined, Eq. (11)
+00163: 
+00164:     # ------------------------------------------------------------------ API
+00165:     def estimate(self, z, rx, gamma):
+00166:         """Eq. (5): AGE-AWARE weighted least squares. All detectors must use
+00167:         this same estimate -- an unmatched baseline fakes ~0.017 AUC."""
+00168:         idx = np.flatnonzero(rx)
+00169:         Hr, w = self.H[idx], gamma[idx] / self.s2[idx]
+00170:         A = Hr.T @ (Hr * w[:, None])
+00171:         if self.cfg.ridge:
+00172:             A = A + np.eye(self.n) * self.cfg.ridge
+00173:         try:
+00174:             return np.linalg.solve(A, Hr.T @ (w * np.asarray(z, float)[idx])), True
+00175:         except np.linalg.LinAlgError:
+00176:             return np.linalg.lstsq(A, Hr.T @ (w * np.asarray(z, float)[idx]), rcond=None)[0], False
+00177: 
+00178:     def update(self, p, Delta, b, z, rx=None, x_hat=None) -> dict:
+00179:         """One twin update. Returns BOTH exposures plus the active s(t), T(t)."""
+00180:         cfg = self.cfg
+
+=== SOLVER-RELATED OCCURRENCES ===
+00063:     ridge: float = 0.0                 # optional estimator ridge if rank-deficient
+00165:     def estimate(self, z, rx, gamma):
+00171:         if self.cfg.ridge:
+00172:             A = A + np.eye(self.n) * self.cfg.ridge
+00174:             return np.linalg.solve(A, Hr.T @ (w * np.asarray(z, float)[idx])), True
+00176:             return np.linalg.lstsq(A, Hr.T @ (w * np.asarray(z, float)[idx]), rcond=None)[0], False

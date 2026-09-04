@@ -1,0 +1,23 @@
+{
+  "schema": "net.run.meta.v1",
+  "status": "running",
+  "events": 1100,
+  "pattern_channels": 583,
+  "telemetry_channels": 45,
+  "time_step": 1,
+  "stop_time": 24,
+  "tail_time": 30,
+  "b_min": 1,
+  "seed": 2001,
+  "run": 1,
+  "counts": {
+    "received": 0,
+    "delivered": 0,
+    "dropped_random": 0,
+    "dropped_starved": 0,
+    "dropped_queue": 0,
+    "malformed": 0,
+    "bytes_received": 0,
+    "bytes_delivered": 0
+  }
+}

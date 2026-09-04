@@ -1,0 +1,12 @@
+ Container real_experiment_bundle-dev-run-7d4a0dcc73b6 Creating 
+ Container real_experiment_bundle-dev-run-7d4a0dcc73b6 Created 
+PAPER1_V5_1_ORACLE_MECHANICAL_AUDIT
+RUN_ID= paper1_v5_1mv_s002_bw04_oracle
+PERFORMANCE_OUTCOME_COLUMNS_READ=False
+Traceback (most recent call last):
+  File "/workspace/audit_paper1_v5_1_oracle_mechanical.py", line 217, in <module>
+    require(len(bootstrap) == 1 and int(bootstrap[0]) == 0, "bootstrap acceptance must occur exactly at step zero")
+  File "/workspace/audit_paper1_v5_1_oracle_mechanical.py", line 66, in require
+    raise RuntimeError(message)
+RuntimeError: bootstrap acceptance must occur exactly at step zero
+

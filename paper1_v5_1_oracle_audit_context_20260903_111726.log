@@ -1,0 +1,75 @@
+ Network real_experiment_bundle_default Creating 
+ Network real_experiment_bundle_default Creating 
+ Network real_experiment_bundle_default Created 
+ Network real_experiment_bundle_default Created 
+ Container real_experiment_bundle-dev-run-1123ce9344ee Creating 
+ Container real_experiment_bundle-dev-run-1123ce9344ee Created 
+PAPER1_V5_1_ORACLE_AUDIT_CONTEXT
+RUN_ID= paper1_v5_1mv_s002_bw04_oracle
+IMPLEMENTATION_MODIFIED=False
+SIMULATION_STARTED=False
+PERFORMANCE_OUTCOME_VALUES_INSPECTED=False
+
+=== CELL RECORD ===
+PATH= /workspace/runs/paper1_v5_1mv_s002_bw04_oracle/cell_record.paper1.v5_1.mechanical.json
+SHA256= 2cd9a928e3e2d470261b5d9fb6eb8735c5b02ae2228fdf5ca4b7e7bf1c562d19
+CONTENT= {"bandwidth_cap_bps":1000000000000,"bandwidth_level":"bw04_oracle","calibration_sha256":"175e513958464158232a4bf9c1014d0059710f2e38b0531ca9db7519ae1f0f78","estimator_solver":"weighted_lstsq_svd","estimator_version":"paper1_v5_1","factor_design_sha256":"f4c2b422b3fb113f1e33bd19aafd89f1591f18f1c5272d88a02d84a3d8d154f1","gamma_sha256":"964e2e4d8229aef1533e894c6b724d91f9a70e4beb5cfa367e27dfecd63b23d0","jump_guard_policy":"fixed_model_increment","matched_far_threshold_sha256":"2e968f235d3ece872e402dd15cbe9d618a34c2862dd885c65105fc96c640303f","mechanical_validation_only":true,"network_run":1,"network_seed":22002,"normal_equations_used":false,"performance_outcomes_inspected":false,"physical_seed":81002,"power_seed":12002,"qualification_seed_excluded":true,"run_id":"paper1_v5_1mv_s002_bw04_oracle","schema":"twin.factor.cell.record.paper1.v5_1.mechanical","seed_index":2,"status":"complete","trust_metric_sha256":"0a2627bdaacad03e582bb039eeb2fb3ac73d33d20b77e96881ebceec64aae437","truth_file":"truth.eval.paper1.v4.seed002.npz","truth_sha256":"4ca98c30acb03981f8f4d35166748d0eaf7810af9d32258ec9b6469c8882b51a","twin_fed_sha256":"39e6729af233032ab9c58851c9682252f02d36eed739eb2ec769e165659da34c"}
+
+=== POWER META ===
+PATH= /workspace/runs/paper1_v5_1mv_s002_bw04_oracle/power/meta.json
+SHA256= 5a758fdf9f42fbb59e0f4aa1f0d258b84b217e7e1bc889280bdb0e355d4b2117
+TOP_LEVEL_KEYS= ['completed_utc', 'created_utc', 'dimensions', 'git_sha', 'host', 'inputs', 'packages', 'platform', 'python', 'resolved_arguments', 'runtime_counts', 'schema', 'seed_stream', 'status', 'telemetry_source', 'wall_seconds']
+SELECTED_CONTEXT= {"completed_utc":"2026-09-02T14:40:02Z","dimensions.steps":13200,"inputs.feeder.sha256":"9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d","inputs.truth.sha256":"4ca98c30acb03981f8f4d35166748d0eaf7810af9d32258ec9b6469c8882b51a","resolved_arguments.seed":12002,"resolved_arguments.steps_per_event":12,"schema":"power.run.meta.v1","seed_stream.independent_from_network_seed":true,"seed_stream.role":"physical_measurement_noise","seed_stream.seed":12002,"status":"complete","telemetry_source":"truth.z_true"}
+
+=== NET META ===
+PATH= /workspace/runs/paper1_v5_1mv_s002_bw04_oracle/net/meta.json
+SHA256= 9f067d04b9683fc11058ed30c5a0ffb044b0d007af87fa238bbfb9a40d7a980e
+TOP_LEVEL_KEYS= ['b_min', 'bandwidth_cap_bps', 'bandwidth_level', 'counts', 'events', 'helics_time_delta', 'pattern_channels', 'run', 'schema', 'seed', 'stage_offset', 'status', 'stop_time', 'tail_time', 'telemetry_channels', 'time_step']
+SELECTED_CONTEXT= {"bandwidth_cap_bps":1000000000000,"bandwidth_level":"bw04_oracle","events":1100,"schema":"net.run.meta.v1","seed":22002,"status":"complete","time_step":1}
+
+=== TWIN META ===
+PATH= /workspace/runs/paper1_v5_1mv_s002_bw04_oracle/twin/meta.json
+SHA256= 0c71b9b28198dc552f62f65fc5aeb7dd346d338dcee8c5adb3d9b18efe336f40
+TOP_LEVEL_KEYS= ['calibration_file_content', 'completed_utc', 'created_utc', 'dimensions', 'factor_design', 'git_sha', 'host', 'inputs', 'packages', 'platform', 'python', 'resolved_arguments', 'runtime_counts', 'schema', 'status', 'timing', 'wall_seconds', 'wire_contract']
+SELECTED_CONTEXT= {"calibration_file_content.schema":"twin.calibration.v2","calibration_file_content.selection.all_events":1100,"calibration_file_content.selection.all_steps":13200,"calibration_file_content.selection.moderate_events":117,"calibration_file_content.selection.negative_events":1053,"calibration_file_content.selection.nominal_ample_events":117,"calibration_file_content.selection.positive_events":47,"calibration_file_content.threshold.event_score_construction":"max_step(r/r0 + u/u0)","completed_utc":"2026-09-02T14:40:14Z","factor_design.bandwidth_cap_bps":1000000000000.0,"factor_design.bandwidth_level":"bw04_oracle","factor_design.schema":"twin.factor.cell.v3","factor_design.transform":"B_effective = minimum(B_pattern, bandwidth_cap_bps)","inputs.calibration.sha256":"175e513958464158232a4bf9c1014d0059710f2e38b0531ca9db7519ae1f0f78","inputs.feeder.sha256":"9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d","inputs.patterns.sha256":"52b7046e902d3594158e36766cadc4ea12b7d859f5c91edb025e3d2286f582d8","inputs.scenarios.sha256":"1abe9ac513e3d9e3e218eb3da2bfa8581598ead64a7713c8b98d4c27e4f6401d","resolved_arguments.bandwidth_cap_bps":1000000000000.0,"resolved_arguments.bandwidth_level":"bw04_oracle","resolved_arguments.checkpoint_every_events":50,"resolved_arguments.steps_per_event":12,"runtime_counts.events":1100,"runtime_counts.steps":13200,"schema":"twin.run.meta.v1","status":"complete","timing.steps_per_event":12,"timing.total_steps":13200,"wire_contract.score_schema":"twin.score.v1","wire_contract.telemetry_schema":"twin.telemetry.v1"}
+
+=== ORACLE META ===
+PATH= /workspace/runs/paper1_v5_1mv_s002_bw04_oracle/oracle/meta.json
+SHA256= 6aaeb5fabed5e95512ed0d1aaa9ca1a06847e2735d5f4ca149c1a102726659c9
+TOP_LEVEL_KEYS= ['completed_utc', 'created_utc', 'event_aggregation', 'git_sha', 'host', 'inputs', 'label_definition', 'packages', 'platform', 'python', 'resolved_arguments', 'runtime_counts', 'schema', 'status', 'timing', 'wall_seconds']
+SELECTED_CONTEXT= {"completed_utc":"2026-09-02T14:40:15Z","event_aggregation.T":"min","event_aggregation.b1_n_rx":"min","event_aggregation.held":"mean_with_any_flag","event_aggregation.high_is_bad":"max","event_aggregation.schema":"oracle.event-aggregation.v2","event_aggregation.solve_exact":"all_with_fraction","inputs.feeder.sha256":"9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d","inputs.truth.sha256":"4ca98c30acb03981f8f4d35166748d0eaf7810af9d32258ec9b6469c8882b51a","resolved_arguments.score_lag_steps":0,"resolved_arguments.steps_per_event":12,"runtime_counts.events":1100,"schema":"oracle.run.meta.v1","status":"complete"}
+
+=== STEP PARQUET SCHEMA ===
+PATH= /workspace/runs/paper1_v5_1mv_s002_bw04_oracle/twin/scores.parquet
+SHA256= a2c8c17071792d848a564ea52ac7f6add8dc33be183231115f2387cd525132d5
+ROWS= 13200
+ROW_GROUPS= 1
+COLUMN_COUNT= 82
+COLUMNS= ["time", "step_index", "event_id", "step_in_event", "pattern_id", "arm", "regime", "stratum", "bandwidth_level", "bandwidth_cap_bps", "r", "chi2", "huber", "lnr", "u_lmax", "u_trace", "u_lmax_mean", "u_trace_mean", "u_lmax_delta", "u_trace_delta", "s_lmax", "s_trace", "s_delta_lmax", "s_delta_trace", "T_delta_lmax", "alarm_delta_lmax", "s", "T", "alarm", "sB1", "sB2", "s_gated_lmax", "s_gated_trace", "b1", "b2", "n_rx", "n_rx_telemetry", "cached_telemetry", "new_telemetry", "held", "solve_exact", "estimator_reliable", "estimator_solver", "estimator_rcond", "estimator_effective_rows", "estimator_rank", "estimator_condition", "estimator_singular_max", "estimator_singular_min", "estimator_residual_norm", "hold_reason", "state_update_accepted_step", "bootstrap_accept_step", "solve_inexact_hold_step", "nonfinite_candidate_hold_step", "jump_guard_hold_step", "candidate_norm", "previous_norm", "jump_norm", "jump_limit", "jump_guard_policy", "model_increment_scale", "external_received_count", "external_total", "external_support_fraction", "pseudo_received_count", "pseudo_only_step", "external_support_present_step", "no_received_measurements_step", "residual_available", "mean_age_telemetry", "max_age_telemetry", "lam_min", "lam_min_mean", "lam_min_delta", "trace_inverse", "floor_kind", "floor_deflation", "loss_quantile", "delta_floor_kind", "delta_floor_deflation", "delta_loss_quantile"]
+TYPES= {"T":"double","T_delta_lmax":"double","alarm":"bool","alarm_delta_lmax":"bool","arm":"string","b1":"double","b2":"double","bandwidth_cap_bps":"double","bandwidth_level":"string","bootstrap_accept_step":"bool","cached_telemetry":"int64","candidate_norm":"double","chi2":"double","delta_floor_deflation":"double","delta_floor_kind":"string","delta_loss_quantile":"int64","estimator_condition":"double","estimator_effective_rows":"int64","estimator_rank":"int64","estimator_rcond":"double","estimator_reliable":"bool","estimator_residual_norm":"double","estimator_singular_max":"double","estimator_singular_min":"double","estimator_solver":"string","event_id":"int64","external_received_count":"int64","external_support_fraction":"double","external_support_present_step":"bool","external_total":"int64","floor_deflation":"double","floor_kind":"string","held":"bool","hold_reason":"string","huber":"double","jump_guard_hold_step":"bool","jump_guard_policy":"string","jump_limit":"double","jump_norm":"double","lam_min":"double","lam_min_delta":"double","lam_min_mean":"double","lnr":"double","loss_quantile":"int64","max_age_telemetry":"double","mean_age_telemetry":"double","model_increment_scale":"double","n_rx":"int64","n_rx_telemetry":"int64","new_telemetry":"int64","no_received_measurements_step":"bool","nonfinite_candidate_hold_step":"bool","pattern_id":"int64","previous_norm":"double","pseudo_only_step":"bool","pseudo_received_count":"int64","r":"double","regime":"string","residual_available":"bool","s":"double","sB1":"double","sB2":"double","s_delta_lmax":"double","s_delta_trace":"double","s_gated_lmax":"double","s_gated_trace":"double","s_lmax":"double","s_trace":"double","solve_exact":"bool","solve_inexact_hold_step":"bool","state_update_accepted_step":"bool","step_in_event":"int64","step_index":"int64","stratum":"int64","time":"double","trace_inverse":"double","u_lmax":"double","u_lmax_delta":"double","u_lmax_mean":"double","u_trace":"double","u_trace_delta":"double","u_trace_mean":"double"}
+
+=== EVENT PARQUET SCHEMA ===
+PATH= /workspace/runs/paper1_v5_1mv_s002_bw04_oracle/twin/scores_events.parquet
+SHA256= b4275e3a1d4488c0fa74b916c86efa7f7597abe92f709bbadad8b05d384ddd25
+ROWS= 1100
+ROW_GROUPS= 1
+COLUMN_COUNT= 71
+COLUMNS= ["event_id", "pattern_id", "arm", "regime", "stratum", "bandwidth_level", "bandwidth_cap_bps", "T", "alarm", "alarm_delta_lmax", "b1", "n_rx", "n_rx_telemetry", "held", "held_any", "solve_exact_fraction", "solve_exact_all", "estimator_reliable_fraction", "estimator_reliable_all", "estimator_solver", "estimator_rcond", "estimator_effective_rows_min", "estimator_effective_rows_max", "estimator_rank_min", "estimator_condition_max", "estimator_singular_max_max", "estimator_singular_min_min", "estimator_residual_norm_max", "state_update_accepted_fraction", "bootstrap_accept_fraction", "solve_inexact_hold_fraction", "nonfinite_candidate_hold_fraction", "jump_guard_hold_fraction", "pseudo_only_fraction", "external_support_present_fraction", "no_received_measurements_fraction", "candidate_norm_max", "previous_norm_max", "jump_norm_max", "jump_limit_min", "jump_guard_policy", "model_increment_scale", "external_received_count_min", "external_total", "external_support_fraction_min", "pseudo_received_count_max", "residual_available", "steps", "s", "s_lmax", "s_trace", "r", "chi2", "huber", "lnr", "u_lmax", "u_trace", "u_lmax_mean", "u_trace_mean", "u_lmax_delta", "u_trace_delta", "sB1", "sB2", "s_gated_lmax", "s_gated_trace", "s_delta_lmax", "s_delta_trace", "T_delta_lmax", "b2", "mean_age_telemetry", "max_age_telemetry"]
+TYPES= {"T":"double","T_delta_lmax":"double","alarm":"bool","alarm_delta_lmax":"bool","arm":"string","b1":"double","b2":"double","bandwidth_cap_bps":"double","bandwidth_level":"string","bootstrap_accept_fraction":"double","candidate_norm_max":"double","chi2":"double","estimator_condition_max":"double","estimator_effective_rows_max":"int64","estimator_effective_rows_min":"int64","estimator_rank_min":"int64","estimator_rcond":"double","estimator_reliable_all":"bool","estimator_reliable_fraction":"double","estimator_residual_norm_max":"double","estimator_singular_max_max":"double","estimator_singular_min_min":"double","estimator_solver":"string","event_id":"int64","external_received_count_min":"int64","external_support_fraction_min":"double","external_support_present_fraction":"double","external_total":"int64","held":"double","held_any":"bool","huber":"double","jump_guard_hold_fraction":"double","jump_guard_policy":"string","jump_limit_min":"double","jump_norm_max":"double","lnr":"double","max_age_telemetry":"double","mean_age_telemetry":"double","model_increment_scale":"double","n_rx":"int64","n_rx_telemetry":"int64","no_received_measurements_fraction":"double","nonfinite_candidate_hold_fraction":"double","pattern_id":"int64","previous_norm_max":"double","pseudo_only_fraction":"double","pseudo_received_count_max":"int64","r":"double","regime":"string","residual_available":"bool","s":"double","sB1":"double","sB2":"double","s_delta_lmax":"double","s_delta_trace":"double","s_gated_lmax":"double","s_gated_trace":"double","s_lmax":"double","s_trace":"double","solve_exact_all":"bool","solve_exact_fraction":"double","solve_inexact_hold_fraction":"double","state_update_accepted_fraction":"double","steps":"int64","stratum":"int64","u_lmax":"double","u_lmax_delta":"double","u_lmax_mean":"double","u_trace":"double","u_trace_delta":"double","u_trace_mean":"double"}
+
+=== CELL MANIFEST STRUCTURE ===
+PATH= /workspace/runs/paper1_v5_1mv_s002_bw04_oracle/CELL_OUTPUT_SHA256SUMS.csv
+SHA256= 3194e08db5bd2f453a10d1a02e81028f02fdf4a38eabc6c3b9bb80bdb74cd123
+FIELDS= ['Algorithm', 'Hash', 'Path']
+ROWS= 11
+
+=== TRUTH STRUCTURE ===
+PATH= /workspace/truth.eval.paper1.v4.seed002.npz
+SHA256= 4ca98c30acb03981f8f4d35166748d0eaf7810af9d32258ec9b6469c8882b51a
+ARRAYS= {"W":{"dtype":"float64","shape":[491,491]},"drift_family":{"dtype":"<U32","shape":[1100]},"event_id":{"dtype":"int64","shape":[13200]},"event_mechanism":{"dtype":"<U160","shape":[1100]},"is_nominal":{"dtype":"bool","shape":[1100]},"meta":{"dtype":"<U1739","shape":[]},"node2sn":{"dtype":"int64","shape":[278]},"node_order":{"dtype":"<U10","shape":[278]},"physical_seed":{"dtype":"int64","shape":[]},"slack_supernodes":{"dtype":"int64","shape":[3]},"telemetry_names":{"dtype":"<U11","shape":[45]},"telemetry_offset":{"dtype":"float64","shape":[45]},"theta_idx":{"dtype":"int64","shape":[244]},"time":{"dtype":"int64","shape":[13200]},"trajectory_id":{"dtype":"<U96","shape":[1100]},"x0":{"dtype":"float64","shape":[491]},"x_true":{"dtype":"float32","shape":[13200,491]},"z_physical":{"dtype":"float32","shape":[13200,45]},"z_true":{"dtype":"float32","shape":[13200,45]}}
+
+SCHEMA_VALUES_INSPECTED=False
+PERFORMANCE_OUTCOME_VALUES_INSPECTED=False
+IMPLEMENTATION_MODIFIED=False
+SIMULATION_STARTED=False
+PAPER1_V5_1_ORACLE_AUDIT_CONTEXT_OK

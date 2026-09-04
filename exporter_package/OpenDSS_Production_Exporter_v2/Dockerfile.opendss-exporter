@@ -1,0 +1,10 @@
+FROM v9-helics-ns3:3.6.1-3.35
+
+COPY requirements.opendss-exporter.txt /tmp/requirements.opendss-exporter.txt
+RUN python -m pip install --no-cache-dir \
+    --requirement /tmp/requirements.opendss-exporter.txt \
+    && python -c "import importlib.metadata as m; import opendssdirect; assert m.version('OpenDSSDirect.py') == '0.9.4'; assert m.version('dss-python') == '0.15.7'; assert m.version('dss-python-backend') == '0.14.5'; print('PINNED_OPENDSS_RUNTIME_OK')"
+
+WORKDIR /workspace
+ENTRYPOINT ["python"]
+

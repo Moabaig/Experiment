@@ -1,0 +1,13 @@
+﻿PAPER 1 V5 STATUS: MECHANICAL VALIDATION ONLY
+
+The tested v5 estimator candidate is installed as twin_fed.py.
+
+Do not resume run_remaining_paper1_results.ps1.
+Do not reuse calibration.v2.json for confirmatory inference.
+Do not reuse paper1_matched_far_thresholds.v1.json.
+Do not start the 30-seed campaign.
+
+Required next gate:
+One isolated seed across five bandwidth levels, followed by schema,
+bootstrap, hold-reason, external-support, pseudo-only and oracle-state
+mechanical audits. Performance outcomes must remain uninspected.

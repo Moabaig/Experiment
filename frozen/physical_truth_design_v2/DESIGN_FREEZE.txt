@@ -1,0 +1,12 @@
+schema=opendss.physical-design-freeze.v1
+status=accepted_and_frozen
+accepted_utc=2026-08-29T05:49:49.7104268Z
+events=1100
+steps_per_event=12
+calibration_seed=51031
+evaluation_seed001=81001
+weight_definition=identity_matrix_491_by_491
+oracle_metric=unweighted_squared_euclidean_state_error
+historical_exporter_recovered=false
+design_is_new_reconstruction=true
+evaluation_data_used=false

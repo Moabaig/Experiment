@@ -1,0 +1,18 @@
+{
+  "old_line_end": 634,
+  "old_line_start": 620,
+  "patched_class": "ProductionTwin",
+  "patched_method": "_estimate",
+  "performance_outcomes_inspected": false,
+  "repair_semantics": [
+    "finite_exact_first_candidate_bootstrap",
+    "post_bootstrap_increment_guard",
+    "explicit_hold_reason",
+    "external_and_pseudo_support_diagnostics",
+    "unchanged_three_value_return_interface"
+  ],
+  "schema": "paper1.v5.guard.patch.v1",
+  "source": "/workspace/paper1_v5_repair_workspace/twin_fed.paper1.v5.candidate.py",
+  "source_sha256_after": "2acf045573858ba283c267738a288b2b1aaf77bcc50f7f2303b5928ef3c9f5f8",
+  "source_sha256_before": "019d18558baa377252ae69913e382a3abd7ded4a606a9385759790bbf1711e1e"
+}

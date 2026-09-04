@@ -1,0 +1,13 @@
+schema=oracle.gamma.selection.v1
+run_id=gamma_pilot_001
+source_split=calibration_only
+source_table=runs/gamma_pilot_001/oracle/oracle_events.parquet
+eligible_events=is_nominal_true_and_regime_ample
+statistic=event_level_oracle_d
+quantile=0.99
+quantile_method=higher
+target_nominal_event_far=0.01
+evaluation_data_used=false
+pilot_gamma=1.0
+pilot_labels_used=false
+declared_utc=2026-08-28T18:55:15.9075425Z

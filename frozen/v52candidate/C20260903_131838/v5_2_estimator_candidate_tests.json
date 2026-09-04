@@ -1,0 +1,106 @@
+{
+  "candidate_path": "/workspace/paper1_v5_2_repair/trust_metric_v5_2_candidate.py",
+  "candidate_sha256": "936dd373a2d8a2f0b905604ca4c3de61ec2cc889ba233aa150a24f44f2926fe6",
+  "live_files_modified": false,
+  "normal_equations_used": false,
+  "performance_outcome_columns_read": false,
+  "performance_outcomes_inspected": false,
+  "prior_center": "previous_state",
+  "prior_covariance": "Q_dt_1_second",
+  "schema": "paper1.v5_2.estimator_candidate_tests.v1",
+  "simulation_rerun": false,
+  "solver": "q_prior_augmented_lstsq_svd",
+  "source_sha256": "0a2627bdaacad03e582bb039eeb2fb3ac73d33d20b77e96881ebceec64aae437",
+  "tests": [
+    {
+      "name": "no_normal_equations_or_dense_solve",
+      "solver": "direct_augmented_lstsq_svd",
+      "status": "PASS"
+    },
+    {
+      "measurement_rank": 491,
+      "name": "bootstrap_full_design_exact_recovery",
+      "relative_error": 4.3688935538791806e-13,
+      "status": "PASS"
+    },
+    {
+      "measurement_rank": 489,
+      "name": "bootstrap_pseudo_only_rejected",
+      "reliable": false,
+      "status": "PASS"
+    },
+    {
+      "measurement_rank": 489,
+      "name": "prior_pseudo_only_holds_previous_state",
+      "posterior_rank": 491,
+      "state_change_norm": 4.443585807005281e-16,
+      "status": "PASS"
+    },
+    {
+      "estimate_error": 0.00015527211702329272,
+      "name": "q_prior_exact_data_moves_toward_truth",
+      "prior_error": 0.0005414478033378312,
+      "process_mahalanobis": 0.3754957282739277,
+      "status": "PASS"
+    },
+    {
+      "maximum_update_norm": 0.003610563642535567,
+      "name": "production_noise_update_bounded_by_q_rms",
+      "q_rms_increment": 0.03596661362814668,
+      "status": "PASS"
+    },
+    {
+      "cases": [
+        {
+          "measurement_rank": 491,
+          "posterior_rank": 491,
+          "reliable": true,
+          "telemetry_gamma": 1.0,
+          "update_norm": 5.009608293914849e-05
+        },
+        {
+          "measurement_rank": 491,
+          "posterior_rank": 491,
+          "reliable": true,
+          "telemetry_gamma": 0.001,
+          "update_norm": 7.114591663894266e-07
+        },
+        {
+          "measurement_rank": 491,
+          "posterior_rank": 491,
+          "reliable": true,
+          "telemetry_gamma": 1e-06,
+          "update_norm": 7.269012026018452e-10
+        },
+        {
+          "measurement_rank": 489,
+          "posterior_rank": 491,
+          "reliable": true,
+          "telemetry_gamma": 1e-12,
+          "update_norm": 8.148594096878849e-16
+        },
+        {
+          "measurement_rank": 489,
+          "posterior_rank": 491,
+          "reliable": true,
+          "telemetry_gamma": 0.0,
+          "update_norm": 4.443585807005281e-16
+        }
+      ],
+      "name": "age_weight_stress_remains_posterior_reliable",
+      "status": "PASS"
+    },
+    {
+      "candidate_norm": 5.539629951540084,
+      "name": "prior_is_previous_state_not_zero",
+      "status": "PASS"
+    },
+    {
+      "name": "process_covariance_is_positive_definite",
+      "q_rms_increment": 0.03596661362814668,
+      "status": "PASS"
+    }
+  ],
+  "tests_failed": 0,
+  "tests_passed": 9
+}

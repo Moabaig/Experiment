@@ -1,0 +1,10 @@
+{
+    "schema":  "paper1.v5_1.mechanical.implementation.v1",
+    "trust_metric_sha256":  "0a2627bdaacad03e582bb039eeb2fb3ac73d33d20b77e96881ebceec64aae437",
+    "twin_fed_sha256":  "39e6729af233032ab9c58851c9682252f02d36eed739eb2ec769e165659da34c",
+    "solver":  "weighted_lstsq_svd",
+    "normal_equations_used":  false,
+    "jump_guard_policy":  "fixed_model_increment",
+    "full_campaign_authorized":  false,
+    "performance_outcomes_inspected":  false
+}

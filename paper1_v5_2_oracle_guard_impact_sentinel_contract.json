@@ -1,0 +1,80 @@
+{
+  "schema": "paper1.v5_2.oracle_guard_impact_sentinel_contract.v1",
+  "purpose": "single_frozen_cell_event_level_guard_impact_and_performance_sentinel",
+  "authorized_run_id": "paper1_v5_2mv_s002_bw04_oracle",
+  "authorized_cell_count": 1,
+  "source_mechanical_audit": {
+    "evidence_root": "frozen/v52audit/A20260903_223859",
+    "report_sha256": "bdb0b93bf7312b10549456e7646812c24ff6e6b00ab9fbd459145b306a8e1f24",
+    "log_sha256": "51792e77faa1952a4d3eb1815aa76374fce073db5ea551bf4c6dabb9df77ad4c",
+    "gate_record_sha256": "15e1126efd9094a9de57d75c24c282085f49587ee3dcbabb2eafa3ab961cb313",
+    "evidence_manifest_sha256": "ab06c8bde10825edb362f4e90ba44bed838ab13030f3ae249f8eb4732399b677"
+  },
+  "authorized_inputs": {
+    "twin_event_file": {
+      "path": "runs/paper1_v5_2mv_s002_bw04_oracle/twin/scores_events.parquet",
+      "sha256": "8bd205aa1f59af3ceb19c83da260ef43366c77ecf30919337b92a398ccb14447",
+      "columns": [
+        "event_id",
+        "arm",
+        "regime",
+        "stratum",
+        "alarm",
+        "s",
+        "chi2",
+        "sB1",
+        "sB2",
+        "b1",
+        "b2",
+        "held",
+        "held_any",
+        "residual_available",
+        "n_rx_telemetry",
+        "state_update_accepted_fraction",
+        "measurement_full_rank_fraction",
+        "posterior_reliable_fraction",
+        "process_guard_hold_fraction",
+        "process_guard_limit",
+        "process_increment_mahalanobis_max",
+        "steps"
+      ]
+    },
+    "oracle_event_file": {
+      "path": "runs/paper1_v5_2mv_s002_bw04_oracle/oracle/oracle_events.parquet",
+      "sha256": "b754cc1caff4e2d67604d89d53f8d76aa54681387b4188d7a070b835c2fd74d8",
+      "columns": [
+        "event_id",
+        "label",
+        "is_nominal",
+        "drift_family",
+        "d",
+        "steps"
+      ]
+    }
+  },
+  "authorized_analysis": [
+    "one_to_one_event_merge",
+    "guard_incidence_by_oracle_label_and_nominal_status",
+    "guard_incidence_by_arm_regime_and_drift_family",
+    "descriptive_state_update_and_reliability_rates",
+    "single_seed_empirical_auc_without_hypothesis_testing",
+    "existing_active_alarm_recall_and_false_positive_rates",
+    "guard_concentration_and_enrichment_diagnostics"
+  ],
+  "authorization": {
+    "existing_outputs_only": true,
+    "event_level_only": true,
+    "performance_outcome_columns_may_be_read": true,
+    "performance_outcomes_may_be_inspected": true,
+    "single_cell_exploratory_only": true,
+    "simulation_rerun_authorized": false,
+    "step_level_outcome_read_authorized": false,
+    "calibration_authorized": false,
+    "parameter_tuning_authorized": false,
+    "guard_limit_change_authorized": false,
+    "implementation_modification_authorized": false,
+    "confirmatory_inference_authorized": false,
+    "full_campaign_authorized": false
+  },
+  "interpretation_rule": "The sentinel may identify a stop condition or justify a separately authorized calibration pilot. It cannot tune parameters, establish F1-F3, or authorize the full campaign."
+}

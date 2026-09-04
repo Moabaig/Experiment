@@ -1,0 +1,135 @@
+x-runtime: &runtime
+  image: v9-helics-ns3:3.6.1-3.35
+  working_dir: /workspace
+  volumes:
+    - ./:/workspace
+  environment:
+    HELICS_BROKER_ADDRESS: tcp://broker:23404
+    PYTHONUNBUFFERED: "1"
+    RUN_ID: ${RUN_ID:-real_001}
+    TRUTH_FILE: ${TRUTH_FILE:-truth.npz}
+    CALIBRATION_FILE: ${CALIBRATION_FILE:-calibration.json}
+    CALIBRATION_MODE: ${CALIBRATION_MODE:-0}
+    POWER_SEED: ${POWER_SEED:-1001}
+    NETWORK_SEED: ${NETWORK_SEED:-2001}
+    NETWORK_RUN: ${NETWORK_RUN:-1}
+    DRIFT_GAMMA: ${DRIFT_GAMMA:-}
+    STOP_TIME: ${STOP_TIME:-0}
+  init: true
+
+services:
+  dev:
+    <<: *runtime
+    build:
+      context: .
+      dockerfile: Dockerfile
+    stdin_open: true
+    tty: true
+    command: ["bash"]
+
+  broker:
+    <<: *runtime
+    profiles: ["cosim"]
+    command:
+      - helics_broker
+      - --coretype=zmq
+      - --federates=4
+      - --external
+      - --port=23404
+      - --loglevel=summary
+
+  power-fed:
+    <<: *runtime
+    profiles: ["cosim"]
+    depends_on: [broker]
+    command:
+      - bash
+      - -lc
+      - >-
+        test -f "/workspace/$${TRUTH_FILE}" &&
+        exec python /workspace/power_fed.py
+        --feeder=/workspace/feeder.npz
+        --truth="/workspace/$${TRUTH_FILE}"
+        --out-dir="/workspace/runs/$${RUN_ID}/power"
+        --destination=net_fed/in
+        --dt=1
+        --helics-time-delta=0.000001
+        --steps-per-event=12
+        --stop-time="$${STOP_TIME}"
+        --seed="$${POWER_SEED}"
+
+  net-fed:
+    <<: *runtime
+    profiles: ["cosim"]
+    depends_on: [broker]
+    command:
+      - bash
+      - -lc
+      - >-
+        mkdir -p "/workspace/runs/$${RUN_ID}/net" &&
+        exec "$${NS3_ROOT}/build/scratch/net_fed"
+        --patterns=/workspace/patterns.csv
+        --meta="/workspace/runs/$${RUN_ID}/net/meta.json"
+        --coreInit="--broker_address=tcp://broker:23404"
+        --stepsPerEvent=12
+        --nTelemetry=45
+        --timeStep=1
+        --helicsTimeDelta=0.000001
+        --stopTime="$${STOP_TIME}"
+        --tailTime=30
+        --bMin=1
+        --seed="$${NETWORK_SEED}"
+        --run="$${NETWORK_RUN}"
+
+  twin-fed:
+    <<: *runtime
+    profiles: ["cosim"]
+    depends_on: [broker]
+    command:
+      - bash
+      - -lc
+      - >-
+        if [ "$${CALIBRATION_MODE}" = "1" ]; then
+          CAL_ARGS="--allow-uncalibrated";
+        else
+          test -f "/workspace/$${CALIBRATION_FILE}";
+          CAL_ARGS="--calibration=/workspace/$${CALIBRATION_FILE}";
+        fi &&
+        exec python /workspace/twin_fed.py
+        --feeder=/workspace/feeder.npz
+        --patterns=/workspace/patterns.npz
+        --scenarios=/workspace/scenarios.csv
+        $${CAL_ARGS}
+        --out-dir="/workspace/runs/$${RUN_ID}/twin"
+        --input-endpoint=twin_fed/in
+        --output-destination=oracle_fed/in
+        --dt=1
+        --helics-time-delta=0.000001
+        --steps-per-event=12
+        --stop-time="$${STOP_TIME}"
+        --tail-time=30
+        --b-min=1
+        --publish-state
+        --strict-protocol
+
+  oracle-fed:
+    <<: *runtime
+    profiles: ["cosim"]
+    depends_on: [broker]
+    command:
+      - bash
+      - -lc
+      - >-
+        test -n "$${DRIFT_GAMMA}" &&
+        test -f "/workspace/$${TRUTH_FILE}" &&
+        exec python /workspace/oracle_fed.py
+        --feeder=/workspace/feeder.npz
+        --truth="/workspace/$${TRUTH_FILE}"
+        --gamma="$${DRIFT_GAMMA}"
+        --out-dir="/workspace/runs/$${RUN_ID}/oracle"
+        --input-endpoint=oracle_fed/in
+        --dt=1
+        --helics-time-delta=0.000001
+        --steps-per-event=12
+        --stop-time="$${STOP_TIME}"
+        --strict-protocol

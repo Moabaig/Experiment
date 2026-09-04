@@ -1,0 +1,15 @@
+{
+  "schema": "opendss.model-provenance.v1",
+  "source_repository": "https://github.com/dss-extensions/electricdss-tst",
+  "source_archive": "https://codeload.github.com/dss-extensions/electricdss-tst/zip/refs/heads/master",
+  "source_subdirectory": "Version8/Distrib/IEEETestCases/123Bus",
+  "master_relative_path": "opendss/123Bus/IEEE123Master.dss",
+  "master_sha256": "c92a69d9b218b1b2646ec7911783826229309038e72f16b848304c0457c0a54d",
+  "parent_linecodes_relative_path": "opendss/IEEELineCodes.DSS",
+  "parent_linecodes_sha256": "71bc16ef9c6084b9e3bab74fbdf967080b79624683465e1483b787ff160f58b3",
+  "model_file_count": 23,
+  "model_tree_sha256": "0c711d58d5482bacbc91fd0560ae608e2a35837cd268a742868456db3827d3e1",
+  "model_tree_hash_algorithm": "SHA256 over sorted records: uint64_be(path_utf8_length) || path_utf8 || sha256(file)",
+  "frozen_feeder_sha256": "9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d"
+}
+

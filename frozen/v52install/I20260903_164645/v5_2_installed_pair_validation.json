@@ -1,0 +1,104 @@
+{
+  "estimator_mode": "q_prior_innovation_after_measurement_bootstrap",
+  "installed_trust_sha256": "936dd373a2d8a2f0b905604ca4c3de61ec2cc889ba233aa150a24f44f2926fe6",
+  "installed_twin_sha256": "9cd9ffaa32dcfe2f12ed161a8d62d2d97b2ab0b4d462fda0e97e7f46572043a4",
+  "legacy_euclidean_jump_guard_active": false,
+  "performance_outcome_columns_read": false,
+  "performance_outcomes_inspected": false,
+  "process_guard_policy": "q_process_mahalanobis",
+  "schema": "paper1.v5_2.installed_pair_validation.v1",
+  "simulation_rerun": false,
+  "tests": [
+    {
+      "name": "direct_svd_without_normal_equations",
+      "solver_calls": [
+        "ValueError",
+        "bool",
+        "float",
+        "int",
+        "len",
+        "np.all",
+        "np.asarray",
+        "np.concatenate",
+        "np.empty",
+        "np.eye",
+        "np.finfo",
+        "np.flatnonzero",
+        "np.full",
+        "np.isfinite",
+        "np.linalg.lstsq",
+        "np.linalg.norm",
+        "np.linalg.svd",
+        "np.sqrt",
+        "np.sum",
+        "np.vstack",
+        "np.zeros"
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "process_covariance_positive_definite",
+      "process_rms_increment": 0.03596661362814668,
+      "q_eigenvalue_min": 1.3173088552710287e-07,
+      "status": "PASS"
+    },
+    {
+      "hold_reason": "solve_inexact",
+      "measurement_rank": 489,
+      "name": "pseudo_only_bootstrap_rejected",
+      "status": "PASS"
+    },
+    {
+      "bootstrap_error": 4.3815732557761955e-13,
+      "measurement_rank": 491,
+      "name": "full_design_bootstrap_exact_recovery",
+      "status": "PASS"
+    },
+    {
+      "hold_reason": "prior_only_hold",
+      "measurement_rank": 489,
+      "name": "pseudo_only_postbootstrap_explicit_hold",
+      "posterior_rank": 491,
+      "status": "PASS"
+    },
+    {
+      "name": "small_network_supported_q_update_accepted",
+      "process_guard_limit": 50.0,
+      "process_increment_mahalanobis": 0.17908453703054156,
+      "status": "PASS"
+    },
+    {
+      "name": "catastrophic_q_coordinate_update_rejected",
+      "process_guard_limit": 50.0,
+      "process_guard_statistic": 51.0,
+      "status": "PASS"
+    },
+    {
+      "name": "step_schema_complete",
+      "status": "PASS",
+      "verified_fields": 17
+    },
+    {
+      "name": "event_schema_complete",
+      "status": "PASS",
+      "verified_fields": 14
+    },
+    {
+      "name": "publication_schema_complete",
+      "status": "PASS",
+      "verified_fields": 17
+    },
+    {
+      "name": "publication_fields_read_from_step_row",
+      "status": "PASS",
+      "verified_fields": 17
+    },
+    {
+      "guard_policy": "q_process_mahalanobis",
+      "name": "prior_and_q_process_guard_wiring_present",
+      "status": "PASS"
+    }
+  ],
+  "tests_failed": 0,
+  "tests_passed": 12
+}

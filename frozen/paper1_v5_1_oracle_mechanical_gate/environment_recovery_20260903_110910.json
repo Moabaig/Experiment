@@ -1,0 +1,22 @@
+{
+    "schema":  "paper1.v5_1.environment.recovery.v1",
+    "run_id":  "paper1_v5_1mv_s002_bw04_oracle",
+    "simulation_completed":  true,
+    "runner_exit_code":  0,
+    "required_completion_markers_verified":  true,
+    "required_output_count":  8,
+    "missing_output_count":  0,
+    "runner_sha256":  "31CC460690323100FDCC10DF7162DB0A92D615035DBC6E9319C09D1610B1DAE9",
+    "trust_metric_sha256":  "0A2627BDAACAD03E582BB039EEB2FB3AC73D33D20B77E96881EBCEEC64AAE437",
+    "twin_fed_sha256":  "39E6729AF233032AB9C58851C9682252F02D36EED739EB2EC769E165659DA34C",
+    "temporary_env_sha256":  "379104DDA541D93B9B0D3B095B6A22491B538E3BFD4E28E8C339D99AF25EB976",
+    "archived_temporary_env_sha256":  "379104DDA541D93B9B0D3B095B6A22491B538E3BFD4E28E8C339D99AF25EB976",
+    "frozen_original_env_sha256":  "55A4FCB1ACB19D86CBE2DA4BCC4FE814170A14A5A637EC6CEC97D9C94195D694",
+    "restored_live_env_sha256":  "55A4FCB1ACB19D86CBE2DA4BCC4FE814170A14A5A637EC6CEC97D9C94195D694",
+    "env_restored_exactly":  true,
+    "simulation_rerun":  false,
+    "implementation_modified":  false,
+    "full_campaign_authorized":  false,
+    "calibration_authorized":  false,
+    "performance_outcomes_inspected":  false
+}

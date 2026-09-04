@@ -1,0 +1,179 @@
+{
+  "context_file": "/workspace/paper1_v5_repair_workspace/paper1_v5_source_context.txt",
+  "guard_line": 626,
+  "occurrences": {
+    "absolute_candidate_guard": [
+      629
+    ],
+    "age_slice": [
+      607
+    ],
+    "bandwidth_slice": [
+      610
+    ],
+    "estimator_call": [
+      620
+    ],
+    "held_assignment": [
+      626
+    ],
+    "hold_factor": [
+      530,
+      548,
+      629,
+      1229,
+      1411
+    ],
+    "previous_state": [
+      551,
+      606,
+      622,
+      632,
+      633,
+      634
+    ],
+    "pseudo_comment": [
+      7,
+      602
+    ],
+    "received_slice": [
+      608
+    ],
+    "solved_exactly": [
+      620,
+      627,
+      632,
+      634,
+      693,
+      776
+    ],
+    "telemetry_boundary": [
+      116,
+      140,
+      142,
+      288,
+      303,
+      304,
+      519,
+      537,
+      552,
+      605,
+      606,
+      607,
+      608,
+      609,
+      610,
+      698,
+      699,
+      772,
+      779,
+      962,
+      1066,
+      1092,
+      1253,
+      1262,
+      1263,
+      1265,
+      1333,
+      1353,
+      1387,
+      1400
+    ]
+  },
+  "performance_outcomes_inspected": false,
+  "relevant_functions": [
+    {
+      "line_end": 162,
+      "line_start": 112,
+      "name": "parse_telemetry_payload",
+      "relevant_terms": [
+        "n_telemetry"
+      ]
+    },
+    {
+      "line_end": 325,
+      "line_start": 284,
+      "name": "validate_arrays",
+      "relevant_terms": [
+        "n_telemetry"
+      ]
+    },
+    {
+      "line_end": 971,
+      "line_start": 942,
+      "name": "drain_messages",
+      "relevant_terms": [
+        "n_telemetry"
+      ]
+    },
+    {
+      "line_end": 1119,
+      "line_start": 1061,
+      "name": "make_meta",
+      "relevant_terms": [
+        "n_telemetry"
+      ]
+    },
+    {
+      "line_end": 1232,
+      "line_start": 1204,
+      "name": "check_args",
+      "relevant_terms": [
+        "hold_factor"
+      ]
+    },
+    {
+      "line_end": 1575,
+      "line_start": 1235,
+      "name": "main",
+      "relevant_terms": [
+        "hold_factor",
+        "n_telemetry"
+      ]
+    },
+    {
+      "line_end": 557,
+      "line_start": 513,
+      "name": "__init__",
+      "relevant_terms": [
+        "hold_factor",
+        "self.x_previous",
+        "n_telemetry"
+      ]
+    },
+    {
+      "line_end": 612,
+      "line_start": 577,
+      "name": "_measurements",
+      "relevant_terms": [
+        "self.x_previous",
+        "n_telemetry",
+        "pseudo"
+      ]
+    },
+    {
+      "line_end": 634,
+      "line_start": 614,
+      "name": "_estimate",
+      "relevant_terms": [
+        "hold_factor",
+        "self.x_previous",
+        "solved_exactly"
+      ]
+    },
+    {
+      "line_end": 792,
+      "line_start": 680,
+      "name": "update",
+      "relevant_terms": [
+        "solved_exactly",
+        "n_telemetry"
+      ]
+    }
+  ],
+  "schema": "paper1.v5.source.audit.v1",
+  "source": "/workspace/paper1_v5_repair_workspace/twin_fed.paper1.v5.candidate.py",
+  "source_lines": 1582,
+  "source_sha256": "019d18558baa377252ae69913e382a3abd7ded4a606a9385759790bbf1711e1e",
+  "syntax_valid": true
+}

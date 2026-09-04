@@ -1,0 +1,52 @@
+{
+  "patched_class": "ProductionTwin",
+  "patched_method": "_estimate",
+  "performance_outcomes_inspected": false,
+  "schema": "paper1.v5.guard.regression.v1",
+  "tests": [
+    {
+      "held": false,
+      "passed": true,
+      "reason": "bootstrap_accept",
+      "state_norm": 31.0,
+      "test": "valid_norm_31_bootstrap"
+    },
+    {
+      "held": false,
+      "jump_limit": 1550.0,
+      "jump_norm": 0.0221585198061579,
+      "passed": true,
+      "reason": "accepted",
+      "test": "small_post_bootstrap_increment"
+    },
+    {
+      "held": true,
+      "passed": true,
+      "reason": "solve_inexact",
+      "test": "inexact_solution_rejected"
+    },
+    {
+      "held": true,
+      "passed": true,
+      "reason": "nonfinite_candidate",
+      "test": "nonfinite_candidate_rejected"
+    },
+    {
+      "held": true,
+      "jump_limit": 1551.1079259903083,
+      "jump_norm": 2000.0,
+      "passed": true,
+      "reason": "jump_guard",
+      "test": "extreme_increment_rejected"
+    },
+    {
+      "external_support_state": "pseudo_only",
+      "held": false,
+      "passed": true,
+      "reason": "bootstrap_accept",
+      "test": "pseudo_only_support_identified"
+    }
+  ],
+  "tests_failed": 0,
+  "tests_passed": 6
+}

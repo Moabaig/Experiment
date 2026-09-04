@@ -1,0 +1,153 @@
+ Network real_experiment_bundle_default Removing 
+ Network real_experiment_bundle_default Removed 
+ Network real_experiment_bundle_default Creating 
+ Network real_experiment_bundle_default Creating 
+ Network real_experiment_bundle_default Created 
+ Network real_experiment_bundle_default Created 
+ Container real_experiment_bundle-dev-run-f6fde7268111 Creating 
+ Container real_experiment_bundle-dev-run-f6fde7268111 Created 
+power_fed preflight: steps=13200 states=491 telemetry=45 telemetry_source=truth.z_true noise=True seed=12002
+PRODUCTION_POWER_VALIDATE_OK
+Starting four-federate run: paper1_v5_1mv_s002_bw04_oracle bandwidth_level=bw04_oracle bandwidth_cap_bps=1000000000000
+ Container real_experiment_bundle-broker-1 Creating 
+ Container real_experiment_bundle-broker-1 Created 
+ Container real_experiment_bundle-oracle-fed-1 Creating 
+ Container real_experiment_bundle-net-fed-1 Creating 
+ Container real_experiment_bundle-twin-fed-1 Creating 
+ Container real_experiment_bundle-power-fed-1 Creating 
+ Container real_experiment_bundle-oracle-fed-1 Created 
+ Container real_experiment_bundle-twin-fed-1 Created 
+ Container real_experiment_bundle-net-fed-1 Created 
+ Container real_experiment_bundle-power-fed-1 Created 
+Attaching to broker-1, net-fed-1, oracle-fed-1, power-fed-1, twin-fed-1
+ Container real_experiment_bundle-broker-1 Starting 
+ Container real_experiment_bundle-broker-1 Started 
+ Container real_experiment_bundle-net-fed-1 Starting 
+ Container real_experiment_bundle-oracle-fed-1 Starting 
+ Container real_experiment_bundle-power-fed-1 Starting 
+ Container real_experiment_bundle-twin-fed-1 Starting 
+broker-1  | [2026-09-02 12:01:11.659] [console] [info] 7-PbK0E-sj1w4-L4ka9-za8xg::Broker 7-PbK0E-sj1w4-L4ka9-za8xg connected on tcp://127.0.0.1:23404
+ Container real_experiment_bundle-net-fed-1 Started 
+ Container real_experiment_bundle-oracle-fed-1 Started 
+ Container real_experiment_bundle-twin-fed-1 Started 
+ Container real_experiment_bundle-power-fed-1 Started 
+power-fed-1  | power_fed preflight: steps=13200 states=491 telemetry=45 telemetry_source=truth.z_true noise=True seed=12002
+oracle-fed-1  | oracle_fed preflight: steps=13200 states=491 gamma=30.8945 weight=file/truth score_lag=0 stage_offset=3e-06s
+twin-fed-1    |   eps = 0.005688
+twin-fed-1    |     lmax : limit 7.09949  -> OK   ceiling 0.4   achievable 0.4
+twin-fed-1    |     trace: limit 238.506  -> OK   ceiling 58.08   achievable 0.237
+twin-fed-1    |     [WARN] delta-confident floor collapses 488/491 directions at p=0.05:
+twin-fed-1    |            u^delta is VACUOUS here. Use exposure_form='mean' as primary and report
+twin-fed-1    |            the delta form only as a conservative check.
+twin-fed-1    | twin_fed production preflight: m=583 n=491 telemetry=45 patterns=1100 steps=13200 stop=13200s b_min=1 bandwidth_level=bw04_oracle bandwidth_cap_bps=1e+12 stage_offset=2e-06s
+twin-fed-1    | metric: scalarization=lmax exposure=mean delta_check=True spectrum_solver=row-scaled-SVD r0=16124.4 u0_lmax=4.64121e-06 u0_trace=1.42693e-05
+twin-fed-1    | HELICS connected: twin_fed input=twin_fed/in output=twin_fed/out->oracle_fed/in
+broker-1      | [2026-09-02 12:01:30.798] [console] [info] root (1)[connected]::{
+broker-1      |    "attributes": {
+broker-1      |       "id": 1,
+broker-1      |       "name": "7-PbK0E-sj1w4-L4ka9-za8xg",
+broker-1      |       "parent": 0
+broker-1      |    },
+broker-1      |    "summary": {
+broker-1      |       "allowed_brokers": [
+broker-1      |          0,
+broker-1      |          2147483647
+broker-1      |       ],
+broker-1      |       "allowed_federates": [
+broker-1      |          4,
+broker-1      |          2147483647
+broker-1      |       ],
+broker-1      |       "brokers": 0,
+broker-1      |       "cores": 4,
+broker-1      |       "countable_federates": 4,
+broker-1      |       "endpoints": 6,
+broker-1      |       "federates": 4,
+broker-1      |       "filters": 0,
+broker-1      |       "inputs": 0,
+broker-1      |       "publications": 0,
+broker-1      |       "translators": 0
+broker-1      |    }
+broker-1      | }
+oracle-fed-1  | HELICS connected: oracle_fed input=oracle_fed/in upstream=twin_fed
+twin-fed-1    | checkpoint: steps=600/13200 events=50
+twin-fed-1    | checkpoint: steps=1200/13200 events=100
+twin-fed-1    | checkpoint: steps=1800/13200 events=150
+twin-fed-1    | checkpoint: steps=2400/13200 events=200
+twin-fed-1    | checkpoint: steps=3000/13200 events=250
+twin-fed-1    | checkpoint: steps=3600/13200 events=300
+broker-1      | [2026-09-02 12:58:27.471] [console] [info] 7-PbK0E-sj1w4-L4ka9-za8xg (1)[operating]:: broker tick
+twin-fed-1    | checkpoint: steps=4200/13200 events=350
+broker-1      | [2026-09-02 13:03:07.530] [console] [info] 7-PbK0E-sj1w4-L4ka9-za8xg (1)[operating]:: broker tick
+broker-1      | [2026-09-02 13:05:57.869] [console] [info] 7-PbK0E-sj1w4-L4ka9-za8xg (1)[operating]:: broker tick
+broker-1      | [2026-09-02 13:07:48.115] [console] [info] 7-PbK0E-sj1w4-L4ka9-za8xg (1)[operating]:: broker tick
+broker-1      | [2026-09-02 13:08:03.149] [console] [info] 7-PbK0E-sj1w4-L4ka9-za8xg (1)[operating]:: broker tick
+broker-1      | [2026-09-02 13:13:28.057] [console] [info] 7-PbK0E-sj1w4-L4ka9-za8xg (1)[operating]:: broker tick
+twin-fed-1    | checkpoint: steps=4800/13200 events=400
+broker-1      | [2026-09-02 13:18:52.837] [console] [info] 7-PbK0E-sj1w4-L4ka9-za8xg (1)[operating]:: broker tick
+broker-1      | [2026-09-02 13:20:22.864] [console] [info] 7-PbK0E-sj1w4-L4ka9-za8xg (1)[operating]:: broker tick
+broker-1      | [2026-09-02 13:21:07.928] [console] [info] 7-PbK0E-sj1w4-L4ka9-za8xg (1)[operating]:: broker tick
+broker-1      | [2026-09-02 13:21:38.037] [console] [info] 7-PbK0E-sj1w4-L4ka9-za8xg (1)[operating]:: broker tick
+twin-fed-1    | checkpoint: steps=5400/13200 events=450
+broker-1      | [2026-09-02 13:40:03.223] [console] [info] 7-PbK0E-sj1w4-L4ka9-za8xg (1)[operating]:: broker tick
+twin-fed-1    | checkpoint: steps=6000/13200 events=500
+twin-fed-1    | checkpoint: steps=6600/13200 events=550
+twin-fed-1    | checkpoint: steps=7200/13200 events=600
+twin-fed-1    | checkpoint: steps=7800/13200 events=650
+twin-fed-1    | checkpoint: steps=8400/13200 events=700
+twin-fed-1    | checkpoint: steps=9000/13200 events=750
+twin-fed-1    | checkpoint: steps=9600/13200 events=800
+twin-fed-1    | checkpoint: steps=10200/13200 events=850
+twin-fed-1    | checkpoint: steps=10800/13200 events=900
+twin-fed-1    | checkpoint: steps=11400/13200 events=950
+twin-fed-1    | checkpoint: steps=12000/13200 events=1000
+twin-fed-1    | checkpoint: steps=12600/13200 events=1050
+power-fed-1   | power_fed complete: packets=594000 bytes=87149064
+net-fed-1     | net_fed complete: received=594000 delivered=461426 dropped_random=38278 dropped_starved=94296 dropped_queue=0
+
+[Kpower-fed-1 exited with code 0
+
+[Knet-fed-1 exited with code 0
+twin-fed-1    | checkpoint: steps=13200/13200 events=1100
+
+[Kbroker-1 exited with code 0
+oracle-fed-1  | oracle_fed complete: scores=13200 events=1100
+
+[Koracle-fed-1 exited with code 0
+twin-fed-1    | twin_fed complete: steps=13200 events=1100 accepted=460162 stale=1264 malformed=0
+
+[Ktwin-fed-1 exited with code 0
+NAME                                  IMAGE                      COMMAND                    SERVICE      CREATED       STATUS                              PORTS
+real_experiment_bundle-broker-1       v9-helics-ns3:3.6.1-3.35   "helics_broker --cor…"    broker       3 hours ago   Exited (0) 11 seconds ago           
+real_experiment_bundle-net-fed-1      v9-helics-ns3:3.6.1-3.35   "bash -lc 'mkdir -p …"    net-fed      3 hours ago   Exited (0) 17 seconds ago           
+real_experiment_bundle-oracle-fed-1   v9-helics-ns3:3.6.1-3.35   "bash -lc 'test -n \"…"   oracle-fed   3 hours ago   Exited (0) 4 seconds ago            
+real_experiment_bundle-power-fed-1    v9-helics-ns3:3.6.1-3.35   "bash -lc 'if [ \"${A…"   power-fed    3 hours ago   Exited (0) 17 seconds ago           
+real_experiment_bundle-twin-fed-1     v9-helics-ns3:3.6.1-3.35   "bash -lc 'if [ \"${C…"   twin-fed     3 hours ago   Exited (0) Less than a second ago   
+CO_SIMULATION_COMPLETE run=paper1_v5_1mv_s002_bw04_oracle log=.\run_paper1_v5_1mv_s002_bw04_oracle.log
+Inspect runs\paper1_v5_1mv_s002_bw04_oracle\{power,net,twin,oracle}\meta.json before analysis.
+FACTOR_CELL_COMPLETE run=paper1_v5_1mv_s002_bw04_oracle
+ Container real_experiment_bundle-oracle-fed-1 Stopping 
+ Container real_experiment_bundle-power-fed-1 Stopping 
+ Container real_experiment_bundle-twin-fed-1 Stopping 
+ Container real_experiment_bundle-net-fed-1 Stopping 
+ Container real_experiment_bundle-oracle-fed-1 Stopped 
+ Container real_experiment_bundle-oracle-fed-1 Removing 
+ Container real_experiment_bundle-net-fed-1 Stopped 
+ Container real_experiment_bundle-net-fed-1 Removing 
+ Container real_experiment_bundle-twin-fed-1 Stopped 
+ Container real_experiment_bundle-twin-fed-1 Removing 
+ Container real_experiment_bundle-power-fed-1 Stopped 
+ Container real_experiment_bundle-power-fed-1 Removing 
+ Container real_experiment_bundle-net-fed-1 Removed 
+ Container real_experiment_bundle-power-fed-1 Removed 
+ Container real_experiment_bundle-oracle-fed-1 Removed 
+ Container real_experiment_bundle-twin-fed-1 Removed 
+ Container real_experiment_bundle-broker-1 Stopping 
+ Container real_experiment_bundle-broker-1 Stopped 
+ Container real_experiment_bundle-broker-1 Removing 
+ Container real_experiment_bundle-broker-1 Removed 
+ Network real_experiment_bundle_default Removing 
+ Network real_experiment_bundle_default Removed 
+PAPER1_V5_1_MECHANICAL_BATCH_COMPLETE
+MODE=Run
+SEED_RANGE=2-2
+BANDWIDTH_RANGE=4-4

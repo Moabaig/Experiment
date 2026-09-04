@@ -1,0 +1,89 @@
+{
+  "calibration_file_content": {},
+  "created_utc": "2026-08-28T05:52:50Z",
+  "dimensions": {
+    "measurements": 583,
+    "patterns": 1100,
+    "states": 491,
+    "telemetry": 45
+  },
+  "git_sha": null,
+  "host": "df79d563ded9",
+  "inputs": {
+    "feeder": {
+      "path": "/workspace/feeder.npz",
+      "sha256": "9df3426ea48c55f509e1f5f149e72f4e076de7d9099980d97e721efb94c8bd5d"
+    },
+    "patterns": {
+      "path": "/workspace/patterns.npz",
+      "sha256": "52b7046e902d3594158e36766cadc4ea12b7d859f5c91edb025e3d2286f582d8"
+    },
+    "scenarios": {
+      "path": "/workspace/scenarios.csv",
+      "sha256": "1abe9ac513e3d9e3e218eb3da2bfa8581598ead64a7713c8b98d4c27e4f6401d"
+    }
+  },
+  "packages": {
+    "helics": "3.6.1",
+    "numpy": "2.1.3",
+    "pandas": "2.2.3",
+    "pyarrow": "18.1.0",
+    "scipy": "1.14.1"
+  },
+  "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "python": "3.11.11 (main, Aug 27 2026, 18:22:12) [GCC 11.4.0]",
+  "resolved_arguments": {
+    "T_th": 0.7,
+    "allow_uncalibrated": true,
+    "b_min": 1.0,
+    "beta1": null,
+    "beta2": null,
+    "broker": "tcp://broker",
+    "calibration": null,
+    "checkpoint_every_events": 50,
+    "core_init": "--federates=1 --broker_address=tcp://broker --brokerport=23405",
+    "core_type": "zmq",
+    "delta": 0.05,
+    "dt": 1.0,
+    "exposure_form": "mean",
+    "federate_name": "twin_fed",
+    "feeder": "/workspace/feeder.npz",
+    "future_time_tolerance": 1e-09,
+    "helics_time_delta": 1e-06,
+    "hold_factor": 50.0,
+    "initial_state": null,
+    "input_endpoint": "twin_fed/in",
+    "lnr": false,
+    "out_dir": "/workspace/runs/smoke_004/twin",
+    "output_destination": "oracle_fed/in",
+    "output_endpoint": "twin_fed/out",
+    "patterns": "/workspace/patterns.npz",
+    "publish_state": true,
+    "r0": null,
+    "scalarization": "lmax",
+    "scenarios": "/workspace/scenarios.csv",
+    "steps_per_event": 12,
+    "stop_time": 24.0,
+    "strict_protocol": true,
+    "tail_time": 30.0,
+    "u0_lmax": null,
+    "u0_trace": null,
+    "validate_only": false
+  },
+  "schema": "twin.run.meta.v1",
+  "status": "connecting",
+  "timing": {
+    "dt": 1.0,
+    "steps_per_event": 12,
+    "stop_time": 24.0,
+    "tail_time": 30.0,
+    "total_steps": 24
+  },
+  "wire_contract": {
+    "input_endpoint": "twin_fed/in",
+    "output_destination": "oracle_fed/in",
+    "output_endpoint": "twin_fed/out",
+    "score_schema": "twin.score.v1",
+    "telemetry_schema": "twin.telemetry.v1"
+  }
+}

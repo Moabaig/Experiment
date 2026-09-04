@@ -1,0 +1,51 @@
+{
+  "authorization": {
+    "authorized_cell_count": 1,
+    "calibration_authorized": false,
+    "full_campaign_authorized": false,
+    "mechanical_validation_only": true,
+    "performance_outcome_columns_may_be_read": false,
+    "performance_outcomes_may_be_inspected": false
+  },
+  "authorized_cells": [
+    {
+      "bandwidth_cap_bps": 1000000000000.0,
+      "bandwidth_from": 4,
+      "bandwidth_level": "bw04_oracle",
+      "bandwidth_to": 4,
+      "run_id": "paper1_v5_2mv_s002_bw04_oracle",
+      "seed_from": 2,
+      "seed_to": 2
+    }
+  ],
+  "candidate_version": "paper1_v5_2",
+  "estimator": {
+    "mode": "q_prior_innovation_after_measurement_bootstrap",
+    "normal_equations_used": false,
+    "prior_center": "previous_state",
+    "prior_covariance": "Q_dt_1_second"
+  },
+  "guard": {
+    "legacy_euclidean_jump_guard_active": false,
+    "limit_source": "existing_hold_factor_dimensionless",
+    "policy": "q_process_mahalanobis"
+  },
+  "installed_pair": {
+    "trust_metric_sha256": "936dd373a2d8a2f0b905604ca4c3de61ec2cc889ba233aa150a24f44f2926fe6",
+    "twin_fed_sha256": "9cd9ffaa32dcfe2f12ed161a8d62d2d97b2ab0b4d462fda0e97e7f46572043a4",
+    "validation_report_sha256": "8ebedb33ea9ed9d2c8488b4d6d6245a9f36632776b569a5c683c81619817ac72"
+  },
+  "purpose": "single_cell_estimator_and_state_scale_mechanical_validation",
+  "run_prefix": "paper1_v5_2mv_",
+  "runner": {
+    "path": "/workspace/run_paper1_factor_campaign_v5_2_mechanical.ps1",
+    "sha256": "5753de4e708206d0a1f8669adc52fa74ba5e4395318a24ccfbfad6c1fceb6629",
+    "source_v5_1_sha256": "31cc460690323100fdcc10df7162db0a92d615035dbc6e9319c09d1610b1dae9"
+  },
+  "schema": "paper1.v5_2.mechanical_validation_contract.v1",
+  "source_evidence": {
+    "estimator_candidate_report_sha256": "8a132c97ea5b41ce69127c05c377536d4441721583eb049737a129897390f9ae",
+    "root_cause_report_sha256": "deb3a8b15d8f6bf2cf942e06d45404b6c5459db783c293d375ec0421a7c21ab2",
+    "twin_integration_report_sha256": "00e56b05edd24581ebef8daecaff9eed0acbbeae41029f43d97921823b4903a8"
+  }
+}

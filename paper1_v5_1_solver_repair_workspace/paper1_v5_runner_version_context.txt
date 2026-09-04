@@ -1,0 +1,217 @@
+PAPER1_V5_MECHANICAL_RUNNER_VERSION_CONTEXT
+RUNNER=C:\Users\Administrator\Downloads\DT Paper 1\DT_Paper_Files\preflight\real_experiment_bundle\real_experiment_bundle\run_paper1_factor_campaign_v5_mechanical.ps1
+RUNNER_SHA256=A2A9D19FFC94018140333F5B8FA8477CA2EC6A2AD767774CAED321689B63D2E8
+INSTALLED_TRUST_SHA256=0A2627BDAACAD03E582BB039EEB2FB3AC73D33D20B77E96881EBCEEC64AAE437
+INSTALLED_TWIN_SHA256=39E6729AF233032AB9C58851C9682252F02D36EED739EB2EC769E165659DA34C
+PERFORMANCE_OUTCOMES_INSPECTED=False
+
+
+-----
+00001: # PAPER 1 V5 MECHANICAL-VALIDATION OVERLAY
+00002: #
+00003: # Purpose: estimator/schema/mechanical validation only.
+00004: # Output prefix: paper1_v5mv_
+00005: # This runner does not authorize confirmatory inference.
+00006: # The v4 calibration and matched-FAR thresholds are plumbing fixtures only.
+00007: # Performance outcomes must not be inspected or used for tuning.
+00008: [CmdletBinding()]
+00009: param(
+00010:     [ValidateSet("Validate", "Truth", "Run", "All")]
+00011:     [string]$Mode = "Validate",
+00012: 
+
+-----
+00034: }
+00035: 
+00036: function Get-HashLower {
+00037:     param([Parameter(Mandatory = $true)][string]$Path)
+00038:     return (
+00039:         Get-FileHash -LiteralPath $Path -Algorithm SHA256
+00040:     ).Hash.ToLowerInvariant()
+00041: }
+00042: 
+00043: function Assert-Hash {
+00044:     param(
+00045:         [Parameter(Mandatory = $true)][string]$Path,
+00046:         [Parameter(Mandatory = $true)][string]$Expected
+00047:     )
+
+-----
+00055: }
+00056: 
+00057: function Test-CompletedCell {
+00058:     param(
+00059:         [Parameter(Mandatory = $true)][string]$RunId,
+00060:         [Parameter(Mandatory = $true)][string]$BandwidthLevel,
+00061:         [Parameter(Mandatory = $true)][double]$BandwidthCap
+
+-----
+00081:         ConvertFrom-Json
+00082:     $twin = Get-Content -LiteralPath "$root\twin\meta.json" -Raw |
+00083:         ConvertFrom-Json
+00084:     $cellRecordPath = Join-Path $root "cell_record.paper1.v5.mechanical.json"
+00085:     if (-not (Test-Path -LiteralPath $cellRecordPath)) {
+00086:         throw "Existing cell lacks its v4 provenance record: $cellRecordPath"
+00087:     }
+00088:     $cellRecord = Get-Content -LiteralPath $cellRecordPath -Raw |
+00089:         ConvertFrom-Json
+00090: 
+00091:     if (
+
+-----
+00093:         [double]($net.bandwidth_cap_bps) -ne $BandwidthCap -or
+00094:         $twin.factor_design.bandwidth_level -ne $BandwidthLevel -or
+00095:         [double]($twin.factor_design.bandwidth_cap_bps) -ne $BandwidthCap -or
+00096:         $cellRecord.schema -ne "twin.factor.cell.record.paper1.v5.mechanical" -or
+00097:         $cellRecord.factor_design_sha256 -ne $script:DesignHash -or
+00098:         $cellRecord.matched_far_threshold_sha256 -ne $script:ThresholdHash
+00099:     ) {
+00100:         throw "Existing cell has conflicting v4 metadata: $RunId"
+00101:     }
+
+-----
+00111: $script:DesignHash = Get-HashLower -Path $designPath
+00112: 
+00113: if (
+00114:     $design.schema -ne "twin.factor.design.paper1.v4" -or
+00115:     [int]$design.seed_policy.count -ne 30 -or
+00116:     [int]$design.campaign_cells -ne 150 -or
+00117:     @($design.bandwidth_levels).Count -ne 5
+
+-----
+00135: 
+00136: Assert-Hash `
+00137:     -Path ".\calibration.v2.json" `
+00138:     -Expected $design.frozen_inputs.calibration_sha256
+00139: Assert-Hash `
+00140:     -Path ".\gamma.frozen.v2.txt" `
+00141:     -Expected $design.frozen_inputs.gamma_sha256
+00142: Assert-Hash `
+00143:     -Path ".\W.frozen.v2.npy" `
+00144:     -Expected $design.frozen_inputs.weight_sha256
+00145: Assert-Hash `
+00146:     -Path ".\physical_design.production.v1.json" `
+00147:     -Expected $design.frozen_inputs.physical_design_sha256
+00148: 
+00149: $gamma = (Get-Content -LiteralPath ".\gamma.frozen.v2.txt" -Raw).Trim()
+00150: $gammaNumber = 0.0
+
+-----
+00169:     ConvertFrom-Json
+00170: 
+00171: if (
+00172:     $thresholdContract.schema -ne "paper1.matched_far.thresholds.v1" -or
+00173:     $thresholdContract.source_split -ne "calibration_only" -or
+00174:     [double]$thresholdContract.target_far -ne 0.01 -or
+00175:     $thresholdContract.quantile_method -ne "higher" -or
+
+-----
+00182: $thresholdHash = Get-HashLower -Path $thresholdPath
+00183: $script:ThresholdHash = $thresholdHash
+00184: 
+00185: $campaignRoot = ".\frozen\paper1_factor_campaign_v5_mechanical"
+00186: New-Item -ItemType Directory -Path $campaignRoot -Force | Out-Null
+00187: 
+00188: $thresholdLockPath = Join-Path $campaignRoot "MATCHED_FAR_THRESHOLD_SHA256.txt"
+00189: if (Test-Path -LiteralPath $thresholdLockPath) {
+00190:     $lockedThresholdHash = (
+00191:         Get-Content -LiteralPath $thresholdLockPath -Raw
+
+-----
+00201:     $thresholdHash |
+00202:         Set-Content -LiteralPath $thresholdLockPath -Encoding ASCII
+00203: }
+00204: $originalEnvPath = Join-Path $campaignRoot "original.env"
+00205: if (-not (Test-Path -LiteralPath $originalEnvPath)) {
+00206:     Copy-Item -LiteralPath ".\.env" -Destination $originalEnvPath
+00207: }
+
+-----
+00240:     }
+00241: 
+00242:     docker compose --profile cosim run --rm --no-deps dev `
+00243:         python /workspace/verify_paper1_factor_design_v4.py
+00244:     if ($LASTEXITCODE -ne 0) {
+00245:         throw "Paper-1 v4 design verification failed."
+00246:     }
+00247: 
+00248:     foreach ($level in @($design.bandwidth_levels)) {
+00249:         docker compose --profile cosim run --rm --no-deps dev `
+00250:             python /workspace/twin_fed.py `
+00251:             --feeder /workspace/feeder.npz `
+00252:             --patterns /workspace/patterns.npz `
+00253:             --scenarios /workspace/scenarios.csv `
+
+-----
+00261:         }
+00262:     }
+00263: 
+00264:     "PAPER1_FACTOR_V4_FULL_PREFLIGHT_OK"
+00265:     "DESIGN_SHA256=$(Get-HashLower -Path $designPath)"
+00266:     "SEEDS=30"
+00267:     "BANDWIDTH_LEVELS=5"
+00268:     "CAMPAIGN_CELLS=150"
+
+-----
+00318:                 $bandwidthIndex++
+00319:             ) {
+00320:                 $level = @($design.bandwidth_levels)[$bandwidthIndex]
+00321:                 $runId = "paper1_v5mv_s$seedText`_$($level.id)"
+00322:                 $capText = ([double]$level.bandwidth_cap_bps).ToString(
+00323:                     "R",
+00324:                     [System.Globalization.CultureInfo]::InvariantCulture
+
+-----
+00362:                 }
+00363: 
+00364:                 $cellRoot = ".\runs\$runId"
+00365:                 $cellRecord = [PSCustomObject]@{
+00366:                     schema = "twin.factor.cell.record.paper1.v5.mechanical"
+00367:                     run_id = $runId
+00368:                     seed_index = $seedIndex
+00369:                     physical_seed = $physicalSeed
+
+-----
+00373:                     bandwidth_level = $level.id
+00374:                     bandwidth_cap_bps = [double]$level.bandwidth_cap_bps
+00375:                     truth_file = $truthName
+00376:                     truth_sha256 = Get-HashLower -Path $truthPath
+00377:                     factor_design_sha256 = Get-HashLower -Path $designPath
+00378:                     calibration_sha256 = Get-HashLower -Path ".\calibration.v2.json"
+00379:                     gamma_sha256 = Get-HashLower -Path ".\gamma.frozen.v2.txt"
+00380:                     matched_far_threshold_sha256 = $thresholdHash
+00381:                     qualification_seed_excluded = $true
+00382:                     status = "complete"
+00383:                 }
+00384:                 $cellRecord |
+00385:                     ConvertTo-Json -Depth 8 |
+00386:                     Set-Content `
+00387:                         -LiteralPath "$cellRoot\cell_record.paper1.v5.mechanical.json" `
+
+-----
+00397:                 $cellFiles = @(
+00398:                     Get-ChildItem -LiteralPath $cellRoot -Recurse -File |
+00399:                         Where-Object {
+00400:                             $_.Name -ne "CELL_OUTPUT_SHA256SUMS.csv"
+00401:                         }
+00402:                 )
+00403:                 $cellHashes = foreach ($file in $cellFiles) {
+00404:                     Get-FileHash `
+00405:                         -LiteralPath $file.FullName `
+00406:                         -Algorithm SHA256
+00407:                 }
+00408:                 $cellHashes |
+00409:                     Export-Csv `
+00410:                         -LiteralPath "$cellRoot\CELL_OUTPUT_SHA256SUMS.csv" `
+00411:                         -NoTypeInformation
+00412: 
+00413:                 "FACTOR_CELL_COMPLETE run=$runId"
+
+-----
+00420:     docker compose --profile cosim down --remove-orphans | Out-Host
+00421: }
+00422: 
+00423: "PAPER1_FACTOR_V4_BATCH_COMPLETE"
+00424: "MODE=$Mode"
+00425: "SEED_RANGE=$SeedFrom-$SeedTo"
+00426: "BANDWIDTH_RANGE=$BandwidthFrom-$BandwidthTo"

@@ -1,0 +1,93 @@
+{
+  "alarm_definition": {
+    "T_th": 1.0322936125408775e-30,
+    "formula": "event maximum s > frozen score_threshold",
+    "score_threshold": 69.04576965495076
+  },
+  "counts": {
+    "alarms": 369,
+    "events": 1100,
+    "fn": 34,
+    "fp": 356,
+    "negative": 1053,
+    "positive": 47,
+    "tn": 697,
+    "tp": 13
+  },
+  "created_utc": "2026-08-30T23:33:36.726330+00:00",
+  "evaluation_data_used_for_tuning": false,
+  "interpretation_flags": {
+    "accuracy_below_always_negative": true,
+    "balanced_accuracy_below_half": true,
+    "group_positive_counts_sparse": true,
+    "primary_score_auc_below_half": true
+  },
+  "label_definition": {
+    "formula": "event maximum Oracle d > frozen gamma",
+    "gamma": 30.894480493264037
+  },
+  "metrics": {
+    "accuracy": 0.6454545454545455,
+    "alarm_rate": 0.33545454545454545,
+    "always_negative_accuracy": 0.9572727272727273,
+    "auc_by_metric": {
+      "chi2": 0.5946535733769777,
+      "huber": 0.5787516922268695,
+      "s": 0.49293810995938653,
+      "sB1": 0.6103331918934756,
+      "sB2": 0.5945727506011194,
+      "s_gated_lmax": 0.4933018124507486,
+      "s_lmax": 0.49293810995938653
+    },
+    "balanced_accuracy": 0.4692570366329232,
+    "f1": 0.062499999999999986,
+    "false_positive_rate": 0.3380816714150047,
+    "precision": 0.03523035230352303,
+    "prevalence": 0.042727272727272725,
+    "recall": 0.2765957446808511,
+    "specificity": 0.6619183285849952
+  },
+  "nominal_ample_control": {
+    "alarm_rate": 0.017857142857142856,
+    "alarms": 2,
+    "events": 112,
+    "target_far": 0.01
+  },
+  "primary_endpoint": "event alarm from max-step frozen lmax score versus event Oracle label",
+  "provenance": {
+    "calibration_sha256": "175e513958464158232a4bf9c1014d0059710f2e38b0531ca9db7519ae1f0f78",
+    "evaluation_plan_sha256": "4d03961f42858d2886a8c3654b1e1f062465c5107c418088386219a06904d05e",
+    "gamma_sha256": "964e2e4d8229aef1533e894c6b724d91f9a70e4beb5cfa367e27dfecd63b23d0",
+    "group_results_sha256": "7dfcf15c04b540dd65faacbd3e44edede47ade41162f0ad78fb4c9294f5c696a",
+    "oracle_events_sha256": "a0206ef21741a7cb5d7d66e3adf710f0f8e18d7db043a9082954f20de2da43b8",
+    "oracle_steps_sha256": "ee86e0f8737cd7df59e588978402c5ec319703ba987d1aa378b24a170c0e9c19",
+    "truth_sha256": "7a47cabb4822523334bee49b9868af054c80b6a3b245be38f03411ba20aba32d",
+    "twin_events_sha256": "81abc7ba810d6a78e6eb15bb7049fb1fb127ee98cb49faae7c1e3e17ea4f30ff",
+    "twin_steps_sha256": "d1b97010b99c0c3498a190b592cc670619352fe3c1637d640b08ba6e77a70b7e"
+  },
+  "run_id": "eval_v2_seed001",
+  "schema": "evaluation.primary-results.v2",
+  "status": "frozen_primary_evaluation",
+  "wilson_95_percent_intervals": {
+    "false_positive_rate": [
+      0.31014371029493304,
+      0.36719672979291673
+    ],
+    "nominal_ample_alarm_rate": [
+      0.004910811536248828,
+      0.06278048742116135
+    ],
+    "precision": [
+      0.02070244493338902,
+      0.059335485706307894
+    ],
+    "recall": [
+      0.16936563369682642,
+      0.41758563624878886
+    ],
+    "specificity": [
+      0.6328032702070833,
+      0.689856289705067
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "authorized_cell_count": 1,
+  "authorized_run_id": "paper1_v5_2mv_s002_bw04_oracle",
+  "calibration_authorized": false,
+  "candidate_runner_sha256": "5753de4e708206d0a1f8669adc52fa74ba5e4395318a24ccfbfad6c1fceb6629",
+  "contract_sha256": "11b20715bd970988a25429ba645373382671c8d5713cba5a836705f83b09256c",
+  "full_campaign_authorized": false,
+  "live_files_modified": false,
+  "performance_outcome_columns_read": false,
+  "performance_outcomes_inspected": false,
+  "replacement_counts": {
+    "display_version_lower": 0,
+    "display_version_upper": 4,
+    "estimator_descriptor": 2,
+    "guard_policy": 2,
+    "lowercase_standalone_version_token": 7,
+    "lowercase_version_namespace": 3,
+    "repair_workspace": 0,
+    "trust_hash_any_case": 1,
+    "twin_hash_any_case": 1,
+    "uppercase_standalone_version_token": 1,
+    "uppercase_version_namespace": 2
+  },
+  "schema": "paper1.v5_2.mechanical_runner_build.v1",
+  "simulation_started": false,
+  "source_runner_sha256": "31cc460690323100fdcc10df7162db0a92d615035dbc6e9319c09d1610b1dae9"
+}
